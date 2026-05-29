@@ -55,9 +55,13 @@ function nextImg() { imgIndex.value = (imgIndex.value + 1) % images.value.length
 async function toggleFav() {
   if (!auth.isAuthenticated) { router.push({ name: 'login', query: { redirect: route.fullPath } }); return }
   favLoading.value = true
+  const previous = isFav.value
+  isFav.value = !previous
   try {
     const { data } = await listingsApi.toggleFavorite(listing.value.id)
     isFav.value = data.favorited
+  } catch {
+    isFav.value = previous
   } finally {
     favLoading.value = false
   }
@@ -106,6 +110,7 @@ onMounted(async () => {
   try {
     const { data } = await listingsApi.getListing(route.params.id)
     listing.value = data
+    isFav.value = !!data.is_favorited
   } catch {
     error.value = 'Cette annonce est introuvable.'
   } finally {

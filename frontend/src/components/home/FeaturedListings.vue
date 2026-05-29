@@ -1,23 +1,39 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getListings } from '@/api/listings.js'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const sectionRef = ref(null)
+const sy  = useScrollParallax()
+const fp1 = parallaxStyle(sectionRef, sy, 0.16)
+const fp2 = parallaxStyle(sectionRef, sy, 0.10)
+const fp3 = parallaxStyle(sectionRef, sy, 0.20)
 
 const listings = ref([])
 
+const cardPlants = [
+  '/Plant - Gradient - Outline - 01.png',
+  '/Plant - Gradient - Outline - 05.png',
+  '/Plant - Gradient - Outline - 09.png',
+  '/Plant - Gradient - Outline - 02.png',
+  '/Plant - Gradient - Outline - 11.png',
+  '/Plant - Gradient - Outline - 06.png',
+]
+
 const gradients = {
-  'plantes-interieur': 'linear-gradient(145deg, #1b4332, #40916c)',
-  'plantes-fleuries':  'linear-gradient(145deg, #831843, #db2777)',
-  'graines-bulbes':    'linear-gradient(145deg, #7c2d12, #dc2626)',
-  'arbres-arbustes':   'linear-gradient(145deg, #14532d, #16a34a)',
-  'outils-materiel':   'linear-gradient(145deg, #1e3a5f, #2563eb)',
-  'services-conseils': 'linear-gradient(145deg, #4c1d95, #7c3aed)',
-  'cours-ateliers':    'linear-gradient(145deg, #7c2d12, #ea580c)',
-  'mobilier-jardin':   'linear-gradient(145deg, #374151, #6b7280)',
-  'autres':            'linear-gradient(145deg, #2d6a4f, #52b788)',
+  'plantes-interieur': 'linear-gradient(145deg, #0d2b1c, #1b5e3b)',
+  'plantes-fleuries':  'linear-gradient(145deg, #4a0d2b, #9b2360)',
+  'graines-bulbes':    'linear-gradient(145deg, #3b2006, #8b5c1c)',
+  'arbres-arbustes':   'linear-gradient(145deg, #0a2e10, #1a6e2e)',
+  'outils-materiel':   'linear-gradient(145deg, #0e1e38, #1e4a8a)',
+  'services-conseils': 'linear-gradient(145deg, #28106a, #5b2aaa)',
+  'cours-ateliers':    'linear-gradient(145deg, #3c1608, #a03810)',
+  'mobilier-jardin':   'linear-gradient(145deg, #1c2028, #48525e)',
+  'autres':            'linear-gradient(145deg, #0f2e1e, #2d6a4f)',
 }
 
 function cardBg(listing) {
-  return gradients[listing.category_slug] || 'linear-gradient(145deg, #2d6a4f, #52b788)'
+  return gradients[listing.category_slug] || 'linear-gradient(145deg, #0f2e1e, #2d6a4f)'
 }
 
 function formatPrice(price) {
@@ -45,7 +61,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="listings-section" id="annonces" v-if="listings.length > 0">
+  <section class="listings-section" id="annonces" v-if="listings.length > 0" ref="sectionRef">
+    <!-- Parallax plant decorations -->
+    <div class="listings-plants" aria-hidden="true">
+      <img src="/Plant - Gradient - Outline - 02.png" class="lp lp-1" :style="fp1" />
+      <img src="/Plant - Flat - 07.png"               class="lp lp-2" :style="fp2" />
+      <img src="/Plant - Gradient - Outline - 06.png" class="lp lp-3" :style="fp3" />
+    </div>
     <div class="container">
       <div class="section-header">
         <span class="section-badge">À la une</span>
@@ -54,40 +76,45 @@ onMounted(async () => {
       </div>
 
       <div class="listings-grid">
-        <article v-for="listing in listings" :key="listing.id" class="listing-card">
-          <!-- Image -->
+        <article v-for="(listing, idx) in listings" :key="listing.id" class="lcard">
+
+          <!-- Image area -->
           <div
-            class="card-image"
+            class="lcard-img"
             :style="listing.thumbnail
-              ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+              ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize:'cover', backgroundPosition:'center' }
               : { background: cardBg(listing) }"
           >
+            <!-- Decorative plant on gradient cards (no thumbnail) -->
+            <img
+              v-if="!listing.thumbnail"
+              :src="cardPlants[idx % cardPlants.length]"
+              class="lcard-plant"
+              aria-hidden="true"
+            />
             <span
-              v-if="(new Date() - new Date(listing.created_at)) < 86400000 * 2"
+              v-if="(new Date() - new Date(listing.created_at)) < 86400000*2"
               class="badge-new"
             >Nouveau</span>
+            <div class="lcard-img-overlay"></div>
           </div>
 
-          <!-- Content -->
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="card-category">{{ listing.category_name || 'Autre' }}</span>
-              <span class="card-date">{{ formatDate(listing.created_at) }}</span>
+          <!-- Body -->
+          <div class="lcard-body">
+            <div class="lcard-meta">
+              <span class="lcard-cat">{{ listing.category_name || 'Autre' }}</span>
+              <span class="lcard-date">{{ formatDate(listing.created_at) }}</span>
             </div>
+            <h3 class="lcard-title">{{ listing.title }}</h3>
+            <div class="lcard-price">{{ formatPrice(listing.price) }}</div>
 
-            <h3 class="card-title">{{ listing.title }}</h3>
-
-            <div class="card-price">{{ formatPrice(listing.price) }}</div>
-
-            <div class="card-footer">
-              <div class="card-seller">
-                <span class="seller-avatar">{{ sellerInitial(listing.seller_name) }}</span>
-                <div class="seller-info">
-                  <span class="seller-name">{{ listing.seller_name }}</span>
-                </div>
+            <div class="lcard-footer">
+              <div class="lcard-seller">
+                <span class="seller-av">{{ sellerInitial(listing.seller_name) }}</span>
+                <span class="seller-name">{{ listing.seller_name }}</span>
               </div>
-              <div class="card-location">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <div class="lcard-loc">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                   <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
                 {{ listing.city }}
@@ -95,14 +122,14 @@ onMounted(async () => {
             </div>
           </div>
 
-          <RouterLink :to="`/annonces/${listing.id}`" class="card-link" :aria-label="`Voir : ${listing.title}`" />
+          <RouterLink :to="`/annonces/${listing.id}`" class="lcard-link" :aria-label="`Voir : ${listing.title}`" />
         </article>
       </div>
 
       <div class="listings-footer">
         <RouterLink to="/annonces" class="btn-all">
           Voir toutes les annonces
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </RouterLink>
@@ -115,23 +142,13 @@ onMounted(async () => {
 .listings-section {
   padding: 96px 0;
   background: white;
+  position: relative; overflow: hidden;
 }
-
-.section-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--forest-50);
-  border: 1.5px solid var(--forest-200);
-  color: var(--forest-700);
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 100px;
-  margin-bottom: 18px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-}
+.listings-plants { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.lp { position: absolute; height: auto; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.lp-1 { width: min(30vw, 380px); top: 5%;    right: -80px; opacity: 0.10; rotate: 10deg; }
+.lp-2 { width: min(20vw, 240px); bottom: 8%; left: -50px;  opacity: 0.12; rotate: -12deg; }
+.lp-3 { width: min(16vw, 200px); top: 40%;   right: 3%;    opacity: 0.08; }
 
 .listings-grid {
   display: grid;
@@ -139,157 +156,115 @@ onMounted(async () => {
   gap: 24px;
 }
 
-.listing-card {
+.lcard {
   position: relative;
   background: white;
-  border: 1.5px solid var(--gray-100);
-  border-radius: 18px;
+  border: 1.5px solid #f0f0f0;
+  border-radius: 20px;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s var(--ease);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
+  transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
-.listing-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--forest-200);
+.lcard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 56px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.07);
+  border-color: #b7e4c7;
 }
+.lcard:hover .lcard-plant { transform: scale(1.06) translateY(-4px); }
 
-.card-image {
+.lcard-img {
   position: relative;
-  height: 200px;
-  overflow: hidden;
+  height: 210px; overflow: hidden;
+  display: flex; align-items: flex-end;
 }
-.card-image::after {
-  content: '';
+.lcard-img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.2));
+}
+.lcard-plant {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15));
+  right: -10px; bottom: -10px;
+  width: 52%;
+  height: auto; object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  opacity: 0.75;
+  transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; user-select: none;
 }
 
 .badge-new {
-  position: absolute;
-  top: 12px; left: 12px;
-  z-index: 2;
-  background: white;
-  color: var(--forest-700);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 100px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  background: white; color: #2d6a4f;
+  font-size: 10.5px; font-weight: 700;
+  padding: 4px 10px; border-radius: 100px;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.card-body {
+.lcard-body {
   padding: 18px 18px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
+  display: flex; flex-direction: column; gap: 10px; flex: 1;
 }
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.lcard-meta {
+  display: flex; align-items: center; justify-content: space-between;
 }
-
-.card-category {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--forest-600);
-  background: var(--forest-50);
-  padding: 3px 10px;
-  border-radius: 100px;
-  border: 1px solid var(--forest-100);
+.lcard-cat {
+  font-size: 11.5px; font-weight: 600; color: #40916c;
+  background: #f0fdf4; padding: 3px 10px;
+  border-radius: 100px; border: 1px solid #b7e4c7;
 }
-
-.card-date {
-  font-size: 12px;
-  color: var(--gray-400);
+.lcard-date {
+  font-size: 11.5px; color: #9ca3af;
 }
-
-.card-title {
+.lcard-title {
   font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--gray-800);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 15px; font-weight: 600;
+  color: #1f2937; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
 }
-
-.card-price {
-  font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--forest-800);
-  letter-spacing: -0.5px;
+.lcard-price {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px; font-weight: 700;
+  color: #1b4332; letter-spacing: -0.5px;
 }
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--gray-100);
+.lcard-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: auto; padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
 }
-
-.card-seller { display: flex; align-items: center; gap: 9px; }
-
-.seller-avatar {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: var(--forest-500);
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
+.lcard-seller { display: flex; align-items: center; gap: 8px; }
+.seller-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #52b788; color: white;
+  font-size: 11px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-
-.seller-info { display: flex; flex-direction: column; gap: 1px; }
-.seller-name { font-size: 12.5px; font-weight: 600; color: var(--gray-700); }
-
-.card-location {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--gray-400);
+.seller-name { font-size: 12.5px; font-weight: 600; color: #374151; }
+.lcard-loc {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: #9ca3af;
 }
-.card-location svg { color: var(--gray-300); flex-shrink: 0; }
-
-.card-link {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+.lcard-link {
+  position: absolute; inset: 0; z-index: 1;
 }
 
-.listings-footer {
-  text-align: center;
-  margin-top: 48px;
-}
+.container { position: relative; z-index: 1; }
+.listings-footer { text-align: center; margin-top: 52px; }
 .btn-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--forest-700);
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 14px 28px;
-  border-radius: 12px;
-  transition: all 0.25s var(--ease);
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #1b4332; color: white;
+  font-size: 15px; font-weight: 600;
+  padding: 14px 30px; border-radius: 14px;
+  transition: all 0.25s;
 }
-.btn-all:hover { background: var(--forest-800); transform: translateY(-2px); box-shadow: var(--shadow-green); }
+.btn-all:hover {
+  background: #2d6a4f; transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(27,67,50,0.28);
+}
 
-@media (max-width: 1024px) { .listings-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1024px) { .listings-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 640px)  { .listings-grid { grid-template-columns: 1fr; } }
 </style>
