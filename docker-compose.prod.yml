@@ -37,6 +37,20 @@ services:
       postgres:
         condition: service_healthy
 
+  seeder:
+    image: ghcr.io/shun-codes/lunivert-backend:latest
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: lunivert
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+    command: npm run db:seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   frontend:
     image: ghcr.io/shun-codes/lunivert-frontend:latest
     restart: unless-stopped
