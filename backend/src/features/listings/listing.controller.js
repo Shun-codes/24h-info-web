@@ -47,7 +47,7 @@ export const createListing = async (req, res, next) => {
     })
 
     if (req.files?.length) {
-      const urls = req.files.map((f) => `/uploads/${f.filename}`)
+      const urls = req.files.map((f) => `/uploads/user/${f.filename}`)
       await ListingModel.addImages(listing.id, urls)
     }
 

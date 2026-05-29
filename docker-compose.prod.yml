@@ -32,7 +32,7 @@ services:
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: ${FRONTEND_URL}
     volumes:
-      - uploads_data:/app/public/uploads
+      - uploads_data:/app/public/uploads/user
     depends_on:
       postgres:
         condition: service_healthy

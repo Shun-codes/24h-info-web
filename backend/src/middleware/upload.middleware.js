@@ -5,7 +5,7 @@ import { mkdirSync } from 'fs'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const uploadDir = path.resolve(__dirname, '../../public/uploads')
+const uploadDir = path.resolve(__dirname, '../../public/uploads/user')
 
 // Crée le dossier uploads au démarrage si absent (Docker volume vide)
 mkdirSync(uploadDir, { recursive: true })

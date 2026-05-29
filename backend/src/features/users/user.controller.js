@@ -16,7 +16,7 @@ export const updateProfile = async (req, res, next) => {
     const name = req.body.name?.trim()
     const phone = req.body.phone?.trim() || null
     const city = req.body.city?.trim() || null
-    const avatar_url = req.file ? `/uploads/${req.file.filename}` : undefined
+    const avatar_url = req.file ? `/uploads/user/${req.file.filename}` : undefined
 
     if (!email || !name) {
       return res.status(400).json({ message: 'Email et nom requis' })
