@@ -1,6 +1,7 @@
 import db from '../../config/database.js'
 
 export const MessageModel = {
+  /** Enregistre un message et retourne la ligne créée. */
   async send({ listing_id, sender_id, receiver_id, content }) {
     const { rows } = await db.query(
       `INSERT INTO messages (listing_id, sender_id, receiver_id, content)
@@ -10,6 +11,17 @@ export const MessageModel = {
     return rows[0]
   },
 
+  /**
+   * Retourne la liste des conversations de l'utilisateur, dédupliquées.
+   *
+   * Stratégie de déduplication :
+   * Une "conversation" = un couple (participants, annonce).
+   * La clé `conv_key` est construite avec LEAST/GREATEST sur les deux IDs pour
+   * qu'elle soit identique quelle que soit la direction du message
+   * (ex. : "3-7-42" = même clé pour sender=3,receiver=7 et sender=7,receiver=3).
+   * `DISTINCT ON (conv_key)` combiné à `ORDER BY conv_key, created_at DESC`
+   * garde uniquement le message le plus récent par conversation.
+   */
   async getConversations(userId) {
     const { rows } = await db.query(
       `SELECT DISTINCT ON (conv_key)

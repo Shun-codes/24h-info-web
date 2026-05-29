@@ -2,11 +2,23 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { UserModel } from '../users/user.model.js'
 
+/**
+ * Génère un JWT signé avec l'ID utilisateur en claim `sub`.
+ * Durée configurable via JWT_EXPIRES_IN (défaut : 7 jours).
+ *
+ * @param {number} userId
+ * @returns {string} token JWT
+ */
 const signToken = (userId) =>
   jwt.sign({ sub: userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   })
 
+/**
+ * POST /api/auth/register
+ * Crée un compte et renvoie immédiatement un token (pas de double étape).
+ * Le mot de passe est hashé avec bcrypt (12 rounds) avant stockage.
+ */
 export const register = async (req, res, next) => {
   try {
     const { email, password, name, phone, city } = req.body
@@ -30,6 +42,15 @@ export const register = async (req, res, next) => {
   }
 }
 
+/**
+ * POST /api/auth/login
+ * Vérifie les identifiants et renvoie un token.
+ * Le message d'erreur est volontairement générique ("Identifiants incorrects")
+ * pour ne pas révéler si l'email existe ou non (énumération d'utilisateurs).
+ * La vérification du bannissement est faite après bcrypt.compare pour ne pas
+ * créer un chemin d'exécution plus rapide qui permettrait de distinguer
+ * "email inconnu" de "compte banni".
+ */
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body
@@ -47,6 +68,7 @@ export const login = async (req, res, next) => {
       return res.status(403).json({ message: 'Compte suspendu, contactez le support' })
     }
 
+    // Exclure le hash du mot de passe de la réponse
     const { password: _, ...safeUser } = user
     res.json({ token: signToken(user.id), user: safeUser })
   } catch (err) {
