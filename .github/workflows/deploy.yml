@@ -21,10 +21,13 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Install deps
-        run: |
-          npm install --prefix backend
-          npm install --prefix frontend
+      - name: Install backend deps
+        working-directory: backend
+        run: npm install
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm install
 
       - name: Run tests
         run: npm test
