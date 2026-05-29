@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch, onMounted, computed } from 'vue'
+import { ref, reactive, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import * as listingsApi from '@/api/listings.js'
@@ -100,11 +100,11 @@ async function loadCategories() {
   } catch { /* silent */ }
 }
 
-function applyFilters() {
+function applyFilters(closeMobile = false) {
   page.value = 1
   updateQuery()
   fetchListings()
-  filtersOpen.value = false
+  if (closeMobile) filtersOpen.value = false
 }
 
 function resetFilters() {
@@ -116,6 +116,20 @@ function resetFilters() {
   filters.favorites_only = false
   applyFilters()
 }
+
+// Filtres select / checkbox → application immédiate
+watch(() => [filters.category, filters.favorites_only], () => {
+  applyFilters()
+})
+
+// Champs texte → debounce 400ms
+let textDebounce = null
+watch(() => [filters.search, filters.city, filters.min_price, filters.max_price], () => {
+  clearTimeout(textDebounce)
+  textDebounce = setTimeout(() => applyFilters(), 400)
+})
+
+onUnmounted(() => clearTimeout(textDebounce))
 
 function updateQuery() {
   const q = {}
@@ -220,7 +234,7 @@ onMounted(async () => {
           </label>
         </div>
 
-        <button class="apply-btn" @click="applyFilters">Appliquer les filtres</button>
+        <button class="apply-btn" @click="applyFilters(true)">Appliquer les filtres</button>
       </aside>
 
       <!-- Results -->
