@@ -1,10 +1,6 @@
 <script setup>
-const links = {
-  'Marketplace': ['Toutes les annonces', 'Catégories', 'Annonces récentes', 'Déposer une annonce', 'Recherche avancée'],
-  'Services': ['Jardiniers à domicile', 'Cours & ateliers', 'Conseils & expertise', 'Conception de jardins'],
-  'Aide': ['Comment ça marche ?', 'FAQ', 'Nous contacter', 'Signaler une annonce', 'Guide du vendeur'],
-  'L\'Uni Vert': ['À propos', 'Blog & conseils', 'Presse', 'Mentions légales', 'Politique de confidentialité'],
-}
+import { useAuthStore } from '@/stores/auth.js'
+const auth = useAuthStore()
 </script>
 
 <template>
@@ -12,60 +8,61 @@ const links = {
     <div class="footer-main">
       <div class="container">
         <div class="footer-grid">
+
           <!-- Brand -->
           <div class="footer-brand">
-            <a href="/" class="footer-logo">
+            <RouterLink to="/" class="footer-logo">
               <img src="/uniVert.png" class="footer-logo-img" alt="L'Uni Vert" />
-            </a>
+            </RouterLink>
             <p class="footer-tagline">
               La marketplace de référence pour tous les passionnés de jardinage en France.
             </p>
 
-            <!-- Trust badges -->
             <div class="trust-badges">
               <div class="trust-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Paiements sécurisés
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Échanges entre particuliers vérifiés
               </div>
               <div class="trust-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Communauté vérifiée
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Communauté locale & gratuite
               </div>
             </div>
 
-            <!-- Social -->
-            <div class="footer-social">
-              <a href="#" class="social-link" aria-label="Instagram">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                </svg>
-              </a>
-              <a href="#" class="social-link" aria-label="Facebook">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-                </svg>
-              </a>
-              <a href="#" class="social-link" aria-label="Pinterest">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                  <path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.77 1.22-5.17 1.22-5.17s-.31-.62-.31-1.54c0-1.45.84-2.53 1.88-2.53.89 0 1.32.67 1.32 1.47 0 .9-.57 2.24-.87 3.48-.25 1.04.52 1.88 1.54 1.88 1.85 0 3.27-1.95 3.27-4.77 0-2.49-1.79-4.23-4.34-4.23-2.96 0-4.69 2.22-4.69 4.51 0 .89.34 1.85.77 2.37.08.1.09.19.07.29l-.29 1.16c-.05.18-.16.22-.37.13-1.39-.65-2.26-2.69-2.26-4.33 0-3.52 2.56-6.76 7.38-6.76 3.87 0 6.88 2.76 6.88 6.44 0 3.84-2.42 6.93-5.77 6.93-1.13 0-2.19-.59-2.55-1.28l-.69 2.59c-.25.96-.93 2.17-1.39 2.9.05.01.1.02.15.02z"/>
-                </svg>
-              </a>
-            </div>
           </div>
 
-          <!-- Links -->
-          <div
-            v-for="(items, section) in links"
-            :key="section"
-            class="footer-col"
-          >
-            <h4 class="footer-col-title">{{ section }}</h4>
+          <!-- Marketplace -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">Marketplace</h4>
             <ul class="footer-col-links">
-              <li v-for="item in items" :key="item">
-                <a href="#">{{ item }}</a>
-              </li>
+              <li><RouterLink to="/annonces">Toutes les annonces</RouterLink></li>
+              <li><RouterLink to="/deposer">Déposer une annonce</RouterLink></li>
+              <li><RouterLink to="/comment-ca-marche">Comment ça marche</RouterLink></li>
             </ul>
           </div>
+
+          <!-- Mon compte -->
+          <div class="footer-col">
+            <h4 class="footer-col-title">Mon compte</h4>
+            <ul class="footer-col-links">
+              <template v-if="auth.isAuthenticated">
+                <li><RouterLink to="/profil">Mon profil</RouterLink></li>
+                <li><RouterLink to="/mes-annonces">Mes annonces</RouterLink></li>
+                <li><RouterLink to="/favoris">Mes favoris</RouterLink></li>
+                <li><RouterLink to="/messages">Messages</RouterLink></li>
+              </template>
+              <template v-else>
+                <li><RouterLink to="/connexion">Se connecter</RouterLink></li>
+                <li><RouterLink to="/inscription">Créer un compte</RouterLink></li>
+              </template>
+            </ul>
+          </div>
+
         </div>
       </div>
     </div>
@@ -75,12 +72,7 @@ const links = {
       <div class="container">
         <div class="bottom-inner">
           <span class="copyright">© 2025 L'Uni Vert — Tous droits réservés</span>
-          <div class="bottom-links">
-            <a href="#">Mentions légales</a>
-            <a href="#">CGU</a>
-            <a href="#">Cookies</a>
-          </div>
-          <span class="made-with">Fait en France</span>
+          <span class="made-with">Fait avec passion 🌿 en France</span>
         </div>
       </div>
     </div>
@@ -100,119 +92,72 @@ const links = {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1.8fr 1fr 1fr;
+  gap: 48px;
 }
 
-/* Brand col */
+/* Brand */
 .footer-logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
+  text-decoration: none;
 }
-
 .footer-logo-img {
   height: 40px; width: auto;
   object-fit: contain; display: block;
   transition: opacity 0.2s;
 }
-.footer-logo:hover .footer-logo-img { opacity: 0.85; }
+.footer-logo:hover .footer-logo-img { opacity: 0.82; }
 
 .footer-tagline {
   font-size: 14px;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.7;
+  color: rgba(255,255,255,0.42);
+  line-height: 1.75;
   margin-bottom: 24px;
+  max-width: 300px;
 }
 
 .trust-badges {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  margin-bottom: 24px;
+  display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px;
 }
 .trust-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12.5px;
-  color: rgba(255,255,255,0.5);
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: rgba(255,255,255,0.48);
 }
 .trust-badge svg { color: var(--forest-400); flex-shrink: 0; }
 
-.footer-social {
-  display: flex;
-  gap: 10px;
-}
-.social-link {
-  width: 36px; height: 36px;
-  border-radius: 9px;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.6);
-  transition: all 0.22s;
-}
-.social-link:hover { background: var(--forest-600); border-color: var(--forest-500); color: white; }
 
 /* Link cols */
 .footer-col-title {
   font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.45);
-  margin-bottom: 18px;
+  font-size: 11.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 20px;
 }
-
 .footer-col-links {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  list-style: none; display: flex; flex-direction: column; gap: 11px;
 }
 .footer-col-links a {
-  font-size: 14px;
-  color: rgba(255,255,255,0.55);
-  transition: color 0.2s;
+  font-size: 14px; color: rgba(255,255,255,0.55); transition: color 0.2s;
+  text-decoration: none;
 }
 .footer-col-links a:hover { color: var(--forest-300); }
 
-/* Bottom bar */
+/* Bottom */
 .footer-bottom { padding: 18px 0; }
-
 .bottom-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
 }
-
 .copyright, .made-with {
-  font-size: 13px;
-  color: rgba(255,255,255,0.3);
+  font-size: 13px; color: rgba(255,255,255,0.28);
 }
 
-.bottom-links {
-  display: flex;
-  gap: 20px;
-}
-.bottom-links a {
-  font-size: 13px;
-  color: rgba(255,255,255,0.3);
-  transition: color 0.2s;
-}
-.bottom-links a:hover { color: rgba(255,255,255,0.6); }
-
-@media (max-width: 1100px) { .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; } }
 @media (max-width: 860px)  { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
 @media (max-width: 500px)  {
   .footer-grid { grid-template-columns: 1fr; }
-  .bottom-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .bottom-inner { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
 </style>
