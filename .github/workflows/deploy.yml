@@ -23,11 +23,15 @@ jobs:
 
       - name: Install backend deps
         working-directory: backend
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Install frontend deps
         working-directory: frontend
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
 
       - name: Run tests
         run: npm test

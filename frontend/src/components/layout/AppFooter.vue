@@ -71,7 +71,7 @@ const auth = useAuthStore()
     <div class="footer-bottom">
       <div class="container">
         <div class="bottom-inner">
-          <span class="copyright">© 2025 L'Uni Vert — Tous droits réservés</span>
+          <span class="copyright">© 2026 L'Uni Vert — Tous droits réservés</span>
           <span class="made-with">Fait avec passion 🌿 en France</span>
         </div>
       </div>
