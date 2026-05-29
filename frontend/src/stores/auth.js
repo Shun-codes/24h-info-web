@@ -34,6 +34,11 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('lunivert_user')
   }
 
+  function setUser(nextUser) {
+    user.value = nextUser
+    localStorage.setItem('lunivert_user', JSON.stringify(nextUser))
+  }
+
   function _persist({ token: t, user: u }) {
     token.value = t
     user.value  = u
@@ -41,5 +46,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('lunivert_user', JSON.stringify(u))
   }
 
-  return { user, token, isAuthenticated, isAdmin, isModerator, login, register, refreshUser, logout }
+  return { user, token, isAuthenticated, isAdmin, isModerator, login, register, refreshUser, setUser, logout }
 })

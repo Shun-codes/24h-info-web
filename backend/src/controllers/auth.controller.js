@@ -75,7 +75,7 @@ export const updatePassword = async (req, res, next) => {
       return res.status(400).json({ message: 'Le nouveau mot de passe doit contenir au moins 8 caractères' })
     }
 
-    const user = await UserModel.findByEmail(req.user.email)
+    const user = await UserModel.findById(req.user.id)
     if (!(await bcrypt.compare(currentPassword, user.password))) {
       return res.status(401).json({ message: 'Mot de passe actuel incorrect' })
     }

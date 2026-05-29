@@ -24,17 +24,18 @@ export const UserModel = {
     return rows[0]
   },
 
-  async update(id, { name, phone, city, avatar_url }) {
+  async update(id, { email, name, phone, city, avatar_url }) {
     const { rows } = await db.query(
       `UPDATE users
-       SET name = COALESCE($1, name),
-           phone = COALESCE($2, phone),
-           city = COALESCE($3, city),
-           avatar_url = COALESCE($4, avatar_url),
+       SET email = COALESCE($1, email),
+           name = COALESCE($2, name),
+           phone = COALESCE($3, phone),
+           city = COALESCE($4, city),
+           avatar_url = COALESCE($5, avatar_url),
            updated_at = NOW()
-       WHERE id = $5
+       WHERE id = $6
        RETURNING id, email, name, phone, city, role, avatar_url`,
-      [name, phone, city, avatar_url, id],
+      [email, name, phone, city, avatar_url, id],
     )
     return rows[0] ?? null
   },

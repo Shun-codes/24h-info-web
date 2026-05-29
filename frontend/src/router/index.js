@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
+import HomeView from '@/views/home/index.vue'
 
 export default createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,51 +13,51 @@ export default createRouter({
     {
       path: '/annonces',
       name: 'listings',
-      component: () => import('@/views/ListingsView.vue'),
+      component: () => import('@/views/annonces/index.vue'),
     },
     {
       path: '/annonces/:id',
       name: 'listing',
-      component: () => import('@/views/ListingView.vue'),
+      component: () => import('@/views/annonces/detail.vue'),
     },
     {
       path: '/connexion',
       name: 'login',
-      component: () => import('@/views/auth/LoginView.vue'),
+      component: () => import('@/views/auth/connexion.vue'),
     },
     {
       path: '/inscription',
       name: 'register',
-      component: () => import('@/views/auth/RegisterView.vue'),
+      component: () => import('@/views/auth/inscription.vue'),
     },
     {
       path: '/deposer',
       name: 'create-listing',
-      component: () => import('@/views/CreateListingView.vue'),
+      component: () => import('@/views/annonces/deposer.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/mes-annonces',
       name: 'my-listings',
-      component: () => import('@/views/MyListingsView.vue'),
+      component: () => import('@/views/annonces/mes-annonces.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/favoris',
       name: 'favorites',
-      component: () => import('@/views/FavoritesView.vue'),
+      component: () => import('@/views/annonces/favoris.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/profil',
       name: 'profile',
-      component: () => import('@/views/ProfileView.vue'),
+      component: () => import('@/views/users/profil.vue'),
       meta: { requiresAuth: true },
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue'),
+      component: () => import('@/views/not-found.vue'),
     },
   ],
 })
