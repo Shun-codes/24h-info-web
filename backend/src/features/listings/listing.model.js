@@ -42,7 +42,7 @@ export const ListingModel = {
     return rows
   },
 
-  async findById(id) {
+  async findById(id, userId = null) {
     const { rows } = await db.query(
       `SELECT l.*,
               u.id AS seller_id, u.name AS seller_name, u.phone AS seller_phone,
@@ -51,14 +51,20 @@ export const ListingModel = {
               COALESCE(
                 json_agg(li.url ORDER BY li.position) FILTER (WHERE li.url IS NOT NULL),
                 '[]'
-              ) AS images
+              ) AS images,
+              CASE WHEN $2::integer IS NULL THEN false
+                   ELSE EXISTS(
+                     SELECT 1 FROM favorites f
+                     WHERE f.listing_id = l.id AND f.user_id = $2
+                   )
+              END AS is_favorited
        FROM listings l
        JOIN users u ON u.id = l.user_id
        LEFT JOIN categories c ON c.id = l.category_id
        LEFT JOIN listing_images li ON li.listing_id = l.id
        WHERE l.id = $1
        GROUP BY l.id, u.id, c.name, c.slug`,
-      [id],
+      [id, userId],
     )
     return rows[0] ?? null
   },
@@ -131,7 +137,7 @@ export const ListingModel = {
 
   async toggleFavorite(userId, listingId) {
     const { rows } = await db.query(
-      'SELECT id FROM favorites WHERE user_id = $1 AND listing_id = $2',
+      'SELECT 1 FROM favorites WHERE user_id = $1 AND listing_id = $2',
       [userId, listingId],
     )
     if (rows.length) {

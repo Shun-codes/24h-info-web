@@ -1,12 +1,16 @@
 import multer from 'multer'
-import path from 'path'
+import path, { dirname } from 'path'
 import { randomUUID } from 'crypto'
 import { mkdirSync } from 'fs'
+import { fileURLToPath } from 'url'
 
-mkdirSync('uploads', { recursive: true })
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const uploadDir = path.resolve(__dirname, '../../public/uploads')
+
+mkdirSync(uploadDir, { recursive: true })
 
 const storage = multer.diskStorage({
-  destination: 'uploads/',
+  destination: uploadDir,
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase()
     cb(null, `${randomUUID()}${ext}`)
