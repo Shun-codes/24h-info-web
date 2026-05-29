@@ -4,24 +4,37 @@ import { getCategories } from '@/api/categories.js'
 
 const categories = ref([])
 
-const gradients = {
-  'plantes-interieur': 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
-  'plantes-fleuries':  'linear-gradient(135deg, #831843 0%, #be185d 100%)',
-  'graines-bulbes':    'linear-gradient(135deg, #713f12 0%, #d97706 100%)',
-  'arbres-arbustes':   'linear-gradient(135deg, #14532d 0%, #16a34a 100%)',
-  'outils-materiel':   'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
-  'services-conseils': 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)',
-  'cours-ateliers':    'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)',
-  'mobilier-jardin':   'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
-  'autres':            'linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)',
+const plantMap = {
+  'plantes-interieur': '/Plant - Flat - 01.png',
+  'plantes-fleuries':  '/Plant - Flat - 04.png',
+  'graines-bulbes':    '/Plant - Flat - 02.png',
+  'arbres-arbustes':   '/Plant - Flat - 10.png',
+  'outils-materiel':   '/Plant - Flat - 05.png',
+  'services-conseils': '/Plant - Flat - 08.png',
+  'cours-ateliers':    '/Plant - Flat - 06.png',
+  'mobilier-jardin':   '/Plant - Flat - 09.png',
+  'autres':            '/Plant - Flat - 11.png',
+}
+const fallback = ['/Plant - Flat - 03.png', '/Plant - Flat - 07.png']
+
+function plantImg(slug, i) {
+  return plantMap[slug] || fallback[i % fallback.length]
 }
 
-function catGradient(slug) {
-  return gradients[slug] || 'linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)'
+const bgMap = {
+  'plantes-interieur': ['#0d2b1c','#1b5e3b'],
+  'plantes-fleuries':  ['#4a0d2b','#9b2360'],
+  'graines-bulbes':    ['#3b2006','#8b5c1c'],
+  'arbres-arbustes':   ['#0a2e10','#1a6e2e'],
+  'outils-materiel':   ['#0e1e38','#1e4a8a'],
+  'services-conseils': ['#28106a','#5b2aaa'],
+  'cours-ateliers':    ['#3c1608','#a03810'],
+  'mobilier-jardin':   ['#1c2028','#48525e'],
+  'autres':            ['#0f2e1e','#2d6a4f'],
 }
-
-function catInitial(name) {
-  return (name || '?').trim()[0].toUpperCase()
+function catBg(slug) {
+  const [a, b] = bgMap[slug] || ['#0f2e1e','#2d6a4f']
+  return `linear-gradient(160deg, ${a} 0%, ${b} 100%)`
 }
 
 onMounted(async () => {
@@ -33,7 +46,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="categories-section" id="categories">
+  <section class="cat-section" id="categories">
+    <!-- Background plant decoration -->
+    <div class="cat-bg-deco" aria-hidden="true">
+      <img src="/Plant - Gradient - Outline - 04.png" class="cat-deco-plant cdp-l" />
+      <img src="/Plant - Gradient - Outline - 08.png" class="cat-deco-plant cdp-r" />
+    </div>
+
     <div class="container">
       <div class="section-header">
         <span class="section-badge">Explorer</span>
@@ -41,30 +60,39 @@ onMounted(async () => {
         <p class="section-subtitle">Des plantes aux services, trouvez exactement ce dont vous avez besoin</p>
       </div>
 
-      <div class="categories-grid">
+      <div class="cat-grid">
         <RouterLink
-          v-for="cat in categories"
+          v-for="(cat, i) in categories"
           :key="cat.slug"
           :to="`/annonces?category=${cat.slug}`"
           class="cat-card"
         >
-          <div class="cat-bg" :style="{ background: catGradient(cat.slug) }">
-            <span class="cat-initial">{{ catInitial(cat.name) }}</span>
-            <div class="cat-glow"></div>
+          <div class="cat-card-bg" :style="{ background: catBg(cat.slug) }"></div>
+          <div class="cat-shimmer"></div>
+
+          <div class="cat-plant-area">
+            <img
+              :src="plantImg(cat.slug, i)"
+              class="cat-plant"
+              :alt="cat.name"
+            />
           </div>
-          <div class="cat-info">
+
+          <div class="cat-footer">
             <span class="cat-name">{{ cat.name }}</span>
+            <div class="cat-arrow-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
           </div>
-          <svg class="cat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
         </RouterLink>
       </div>
 
       <div class="see-all">
         <RouterLink to="/annonces" class="see-all-btn">
           Voir toutes les annonces
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </RouterLink>
@@ -74,149 +102,110 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.categories-section {
-  padding: 96px 0;
-  background: var(--cream);
+.cat-section {
+  padding: 100px 0 96px;
+  background: #f7faf4;
+  position: relative;
+  overflow: hidden;
 }
 
-.section-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--forest-50);
-  border: 1.5px solid var(--forest-200);
-  color: var(--forest-700);
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 100px;
-  margin-bottom: 18px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+.cat-bg-deco {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
 }
+.cat-deco-plant { position: absolute; width: 320px; height: auto; opacity: 0.07; }
+.cdp-l { bottom: -40px; left: -60px; transform: rotate(-20deg); }
+.cdp-r { top: -40px; right: -60px; transform: rotate(15deg) scaleX(-1); }
 
-.categories-grid {
+.container { position: relative; z-index: 1; }
+
+.cat-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 18px;
 }
 
 .cat-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: white;
-  border: 1.5px solid var(--gray-100);
-  border-radius: 16px;
-  padding: 16px;
+  position: relative;
+  border-radius: 20px;
+  aspect-ratio: 3/4;
+  overflow: hidden;
   cursor: pointer;
-  transition: all 0.28s var(--ease);
-  position: relative;
-  overflow: hidden;
   text-decoration: none;
+  transition: transform 0.4s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.35s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
-
-.cat-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--forest-50);
-  opacity: 0;
-  transition: opacity 0.25s;
-}
-
 .cat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--forest-300);
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 24px 56px rgba(0,0,0,0.22);
 }
-.cat-card:hover::before { opacity: 1; }
-.cat-card:hover .cat-arrow { opacity: 1; transform: translateX(0); }
+.cat-card:hover .cat-plant { transform: scale(1.1) translateY(-6px); }
+.cat-card:hover .cat-arrow-wrap { opacity: 1; transform: translateX(4px); }
+.cat-card:hover .cat-shimmer { opacity: 1; }
 
-.cat-bg {
-  width: 52px; height: 52px;
-  border-radius: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
+.cat-card-bg {
+  position: absolute; inset: 0; z-index: 0;
 }
 
-.cat-glow {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.12);
-  border-radius: 12px;
+.cat-shimmer {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.35s;
 }
 
-.cat-initial {
-  font-size: 20px;
-  font-weight: 800;
-  color: rgba(255,255,255,0.9);
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-heading);
+.cat-plant-area {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px 12px 64px;
+  z-index: 2;
+}
+.cat-plant {
+  width: 75%; height: 75%; object-fit: contain;
+  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  filter: drop-shadow(0 12px 24px rgba(0,0,0,0.3));
 }
 
-.cat-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-  position: relative;
-  z-index: 1;
+.cat-footer {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  z-index: 3;
+  padding: 12px 16px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+  display: flex; align-items: center; justify-content: space-between;
 }
 
 .cat-name {
-  font-size: 14.5px;
-  font-weight: 600;
-  color: var(--gray-800);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 13.5px; font-weight: 700;
+  color: white; letter-spacing: 0.2px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
 }
 
-.cat-arrow {
-  width: 16px; height: 16px;
-  color: var(--forest-600);
+.cat-arrow-wrap {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: white; opacity: 0; transform: translateX(-6px);
+  transition: all 0.3s;
   flex-shrink: 0;
-  opacity: 0;
-  transform: translateX(-6px);
-  transition: all 0.25s var(--ease);
-  position: relative;
-  z-index: 1;
 }
 
 .see-all {
-  text-align: center;
-  margin-top: 44px;
+  text-align: center; margin-top: 52px;
 }
-
 .see-all-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--forest-700);
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border: 2px solid var(--forest-200);
-  border-radius: 12px;
-  transition: all 0.25s var(--ease);
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 2px solid #2d6a4f; color: #2d6a4f;
+  font-size: 15px; font-weight: 600;
+  padding: 13px 28px; border-radius: 14px;
   background: white;
+  transition: all 0.28s;
 }
 .see-all-btn:hover {
-  background: var(--forest-700);
-  color: white;
-  border-color: var(--forest-700);
+  background: #2d6a4f; color: white;
   transform: translateY(-2px);
-  box-shadow: var(--shadow-green);
+  box-shadow: 0 8px 28px rgba(27,67,50,0.22);
 }
 
-@media (max-width: 1024px) { .categories-grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 720px)  { .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-@media (max-width: 480px)  { .categories-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .cat-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 720px)  { .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+@media (max-width: 420px)  { .cat-grid { grid-template-columns: 1fr; } }
 </style>
