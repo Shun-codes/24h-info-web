@@ -14,9 +14,6 @@ frontend/.vite/
 backend/.env
 *.local
 
-# Uploads utilisateurs
-backend/uploads/
-
 # Logs
 logs/
 *.log
@@ -37,3 +34,14 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Upload
+backend/uploads
+
+# Couverture de tests
+coverage/
+backend/coverage/
+frontend/coverage/
+
+# Fichiers générés
+*.pdf

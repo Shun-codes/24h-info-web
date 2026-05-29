@@ -22,7 +22,7 @@ const deletingId = ref(null)
 
 function formatPrice(price) {
   if (price == null) return 'Gratuit'
-  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function formatDate(d) {
@@ -146,7 +146,6 @@ onMounted(async () => {
 
       <!-- Empty -->
       <div v-else-if="listings.length === 0" class="empty-state">
-        <div class="empty-icon">📋</div>
         <h2>Aucune annonce pour l'instant</h2>
         <p>Déposez votre première annonce en quelques clics.</p>
         <RouterLink to="/deposer" class="btn-empty-cta">Déposer une annonce</RouterLink>
@@ -154,112 +153,123 @@ onMounted(async () => {
 
       <!-- List -->
       <div v-else class="listings-list">
-        <div
-          v-for="listing in listings"
-          :key="listing.id"
-          class="listing-row"
-          :class="{ hidden: listing.is_hidden, editing: editId === listing.id }"
-        >
-          <!-- Thumbnail -->
-          <div class="row-thumb" :style="listing.thumbnail ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}">
-            <span v-if="!listing.thumbnail" class="thumb-emoji">🌿</span>
-          </div>
+        <div v-for="listing in listings" :key="listing.id" class="listing-item">
 
-          <!-- Info -->
-          <div class="row-info">
-            <div class="row-badges">
-              <span v-if="listing.is_hidden" class="badge-hidden">Masquée</span>
-              <span v-else class="badge-active">Active</span>
-              <span v-if="listing.category_name" class="badge-cat">{{ listing.category_name }}</span>
-            </div>
-            <h3 class="row-title">
-              <RouterLink :to="`/annonces/${listing.id}`">{{ listing.title }}</RouterLink>
-            </h3>
-            <div class="row-meta">
-              <span class="row-price">{{ formatPrice(listing.price) }}</span>
-              <span class="row-dot">·</span>
-              <span class="row-city">{{ listing.city }}</span>
-              <span class="row-dot">·</span>
-              <span class="row-date">{{ formatDate(listing.created_at) }}</span>
-              <span class="row-dot">·</span>
-              <span :class="['row-expires', { expired: listing.expires_at && new Date(listing.expires_at) < new Date() }]">
-                {{ expiresIn(listing.expires_at) }}
-              </span>
-            </div>
-          </div>
+          <div
+            class="listing-row"
+            :class="{ hidden: listing.is_hidden, editing: editId === listing.id }"
+          >
+            <!-- Thumbnail -->
+            <div class="row-thumb" :style="listing.thumbnail ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"></div>
 
-          <!-- Actions -->
-          <div class="row-actions" v-if="editId !== listing.id">
-            <button class="btn-action btn-view" @click="router.push(`/annonces/${listing.id}`)">Voir</button>
-            <button class="btn-action btn-edit" @click="openEdit(listing)">Modifier</button>
-            <button class="btn-action btn-hide" @click="toggleHide(listing)">
-              {{ listing.is_hidden ? 'Afficher' : 'Masquer' }}
-            </button>
-            <button
-              class="btn-action btn-delete"
-              :disabled="deletingId === listing.id"
-              @click="deleteListing(listing)"
-            >
-              {{ deletingId === listing.id ? '…' : 'Supprimer' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Inline edit form -->
-        <transition name="slide">
-          <div v-if="editId" class="edit-panel">
-            <h3 class="edit-title">Modifier l'annonce</h3>
-
-            <div class="edit-grid">
-              <div class="field">
-                <label>Titre</label>
-                <input v-model="editForm.title" type="text" maxlength="255" />
+            <!-- Info -->
+            <div class="row-info">
+              <div class="row-badges">
+                <span v-if="listing.is_hidden" class="badge-hidden">Masquée</span>
+                <span v-else class="badge-active">Active</span>
+                <span v-if="listing.category_name" class="badge-cat">{{ listing.category_name }}</span>
               </div>
-
-              <div class="field">
-                <label>Ville</label>
-                <input v-model="editForm.city" type="text" />
-              </div>
-
-              <div class="field">
-                <label>Prix (€)</label>
-                <input v-model="editForm.price" type="number" min="0" step="0.01" />
-              </div>
-
-              <div class="field">
-                <label>Catégorie</label>
-                <select v-model="editForm.category_id">
-                  <option value="">Aucune catégorie</option>
-                  <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                    {{ cat.icon }} {{ cat.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="field field-full">
-                <label>Description</label>
-                <textarea v-model="editForm.description" rows="4"></textarea>
-              </div>
-
-              <div class="field field-checkbox">
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="editForm.is_hidden" />
-                  <span>Masquer cette annonce</span>
-                </label>
+              <h3 class="row-title">
+                <RouterLink :to="`/annonces/${listing.id}`">{{ listing.title }}</RouterLink>
+              </h3>
+              <div class="row-meta">
+                <span class="row-price">{{ formatPrice(listing.price) }}</span>
+                <span class="row-dot">·</span>
+                <span class="row-city">{{ listing.city }}</span>
+                <span class="row-dot">·</span>
+                <span class="row-date">{{ formatDate(listing.created_at) }}</span>
+                <span class="row-dot">·</span>
+                <span :class="['row-expires', { expired: listing.expires_at && new Date(listing.expires_at) < new Date() }]">
+                  {{ expiresIn(listing.expires_at) }}
+                </span>
               </div>
             </div>
 
-            <p v-if="saveErr" class="save-error">{{ saveErr }}</p>
-
-            <div class="edit-actions">
-              <button class="btn-cancel-edit" @click="cancelEdit">Annuler</button>
-              <button class="btn-save-edit" :disabled="saving" @click="saveEdit(listings.find(l => l.id === editId))">
-                <span v-if="saving" class="spinner"></span>
-                {{ saving ? 'Sauvegarde…' : 'Enregistrer' }}
+            <!-- Actions -->
+            <div class="row-actions">
+              <button class="btn-action btn-view" @click="router.push(`/annonces/${listing.id}`)">Voir</button>
+              <button class="btn-action btn-edit" :class="{ active: editId === listing.id }" @click="editId === listing.id ? cancelEdit() : openEdit(listing)">
+                {{ editId === listing.id ? 'Fermer' : 'Modifier' }}
+              </button>
+              <button class="btn-action btn-hide" @click="toggleHide(listing)">
+                {{ listing.is_hidden ? 'Afficher' : 'Masquer' }}
+              </button>
+              <button
+                class="btn-action btn-delete"
+                :disabled="deletingId === listing.id"
+                @click="deleteListing(listing)"
+              >
+                {{ deletingId === listing.id ? '…' : 'Supprimer' }}
               </button>
             </div>
           </div>
-        </transition>
+
+          <!-- Inline edit form — juste sous la ligne concernée -->
+          <transition name="slide">
+            <div v-if="editId === listing.id" class="edit-panel">
+              <h3 class="edit-title">Modifier l'annonce</h3>
+
+              <div class="edit-grid">
+                <div class="field">
+                  <label>Titre</label>
+                  <input v-model="editForm.title" type="text" maxlength="255" />
+                </div>
+
+                <div class="field">
+                  <label>Ville</label>
+                  <input v-model="editForm.city" type="text" />
+                </div>
+
+                <div class="field">
+                  <label>Prix (€)</label>
+                  <input v-model="editForm.price" type="number" min="0" step="0.01" />
+                </div>
+
+                <div class="field">
+                  <label>Catégorie</label>
+                  <select v-model="editForm.category_id">
+                    <option value="">Aucune catégorie</option>
+                    <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                      {{ cat.icon }} {{ cat.name }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="field field-full">
+                  <label>Description</label>
+                  <textarea v-model="editForm.description" rows="4"></textarea>
+                </div>
+
+                <div class="field field-full">
+                  <label>Visibilité</label>
+                  <button
+                    type="button"
+                    :class="['visibility-toggle', { 'is-hidden': editForm.is_hidden }]"
+                    @click="editForm.is_hidden = !editForm.is_hidden"
+                  >
+                    <span class="toggle-track">
+                      <span class="toggle-thumb"></span>
+                    </span>
+                    <span class="toggle-label">
+                      {{ editForm.is_hidden ? 'Annonce masquée — non visible des autres utilisateurs' : 'Annonce visible — accessible à tous' }}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <p v-if="saveErr" class="save-error">{{ saveErr }}</p>
+
+              <div class="edit-actions">
+                <button class="btn-cancel-edit" @click="cancelEdit">Annuler</button>
+                <button class="btn-save-edit" :disabled="saving" @click="saveEdit(listing)">
+                  <span v-if="saving" class="spinner"></span>
+                  {{ saving ? 'Sauvegarde…' : 'Enregistrer' }}
+                </button>
+              </div>
+            </div>
+          </transition>
+
+        </div>
       </div>
     </div>
   </main>
@@ -332,10 +342,17 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.listing-item {
+  display: flex;
+  flex-direction: column;
+}
+
 .listing-row {
   background: white;
   border: 1.5px solid var(--gray-100);
   border-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -344,7 +361,13 @@ onMounted(async () => {
   box-shadow: var(--shadow-sm);
 }
 .listing-row.hidden { opacity: 0.65; }
-.listing-row.editing { border-color: var(--forest-300); box-shadow: 0 0 0 3px rgba(82,183,136,0.12); }
+.listing-row.editing {
+  border-color: var(--forest-300);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+  box-shadow: none;
+}
 
 .row-thumb {
   width: 80px;
@@ -457,6 +480,7 @@ onMounted(async () => {
   color: var(--forest-700);
 }
 .btn-edit:hover { background: var(--forest-100); }
+.btn-edit.active { background: var(--forest-700); color: white; border-color: var(--forest-700); }
 
 .btn-hide {
   background: #fef3c7;
@@ -476,10 +500,10 @@ onMounted(async () => {
 /* Edit panel */
 .edit-panel {
   background: var(--forest-50);
-  border: 1.5px solid var(--forest-200);
-  border-radius: 16px;
+  border: 1.5px solid var(--forest-300);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
   padding: 24px;
-  margin-top: -4px;
 }
 
 .edit-title {
@@ -526,18 +550,61 @@ onMounted(async () => {
 .field textarea:focus { border-color: var(--forest-500); }
 .field textarea { resize: vertical; }
 
-.field-checkbox { display: flex; align-items: center; }
-.checkbox-label {
+.visibility-toggle {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 12px;
+  padding: 10px 14px;
+  background: white;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  width: 100%;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+  font-family: var(--font-body);
+}
+
+.visibility-toggle:hover { border-color: var(--forest-300); }
+
+.visibility-toggle.is-hidden {
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.toggle-track {
+  width: 40px;
+  height: 22px;
+  background: var(--gray-300);
+  border-radius: 11px;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.visibility-toggle:not(.is-hidden) .toggle-track { background: var(--forest-500); }
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.visibility-toggle:not(.is-hidden) .toggle-thumb { transform: translateX(18px); }
+
+.toggle-label {
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--gray-700);
-  margin-bottom: 0;
 }
-.checkbox-label input { width: 16px; height: 16px; cursor: pointer; }
+
+.visibility-toggle.is-hidden .toggle-label { color: #92400e; }
 
 .save-error {
   font-size: 13px;

@@ -2,6 +2,13 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const pageRef = ref(null)
+const sy  = useScrollParallax()
+const lp1 = parallaxStyle(pageRef, sy, 0.10)
+const lp2 = parallaxStyle(pageRef, sy, 0.14)
+const lp3 = parallaxStyle(pageRef, sy, 0.07)
 
 const router = useRouter()
 const auth   = useAuthStore()
@@ -71,7 +78,12 @@ async function submit() {
 </script>
 
 <template>
-  <main class="auth-page">
+  <main class="auth-page" ref="pageRef">
+    <div class="auth-plants" aria-hidden="true">
+      <img src="/Plant - Flat - 03.png"               class="ap ap-1" :style="lp1" />
+      <img src="/Plant - Flat - 08.png"               class="ap ap-2" :style="lp2" />
+      <img src="/Plant - Gradient - Outline - 01.png" class="ap ap-3" :style="lp3" />
+    </div>
     <div class="auth-card">
       <div class="auth-header">
         <h1>Créer un compte</h1>
@@ -130,7 +142,8 @@ async function submit() {
               @input="error = ''"
             />
             <button type="button" class="toggle-pwd" @click="showPwd = !showPwd" tabindex="-1">
-              {{ showPwd ? '🙈' : '👁️' }}
+              <svg v-if="showPwd" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
           <div v-if="password" class="strength">
@@ -158,7 +171,8 @@ async function submit() {
               @input="error = ''"
             />
             <button type="button" class="toggle-pwd" @click="showCfm = !showCfm" tabindex="-1">
-              {{ showCfm ? '🙈' : '👁️' }}
+              <svg v-if="showCfm" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
           </div>
         </div>
@@ -187,7 +201,14 @@ async function submit() {
   justify-content: center;
   padding: 40px 20px;
   background: var(--cream);
+  position: relative; overflow: hidden;
 }
+.auth-plants { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.ap { position: absolute; height: auto; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.ap-1 { width: min(28vw, 300px); bottom: -20px; left: -50px;  opacity: 0.17; rotate: -18deg; }
+.ap-2 { width: min(20vw, 220px); top: 5%;       right: -40px; opacity: 0.15; rotate: 12deg; }
+.ap-3 { width: min(14vw, 160px); top: 20%;      left: 4%;     opacity: 0.11; }
+.auth-card { position: relative; z-index: 1; }
 
 .auth-card {
   background: var(--white);

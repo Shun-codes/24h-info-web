@@ -20,7 +20,7 @@ export const getListings = async (req, res, next) => {
 
 export const getListing = async (req, res, next) => {
   try {
-    const listing = await ListingModel.findById(req.params.id)
+    const listing = await ListingModel.findById(req.params.id, req.user?.id ?? null)
     if (!listing) return res.status(404).json({ message: 'Annonce introuvable' })
     res.json(listing)
   } catch (err) {

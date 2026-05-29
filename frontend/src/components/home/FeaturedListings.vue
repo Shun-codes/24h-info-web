@@ -1,188 +1,138 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getListings } from '@/api/listings.js'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
 
-const listings = ref([
-  {
-    id: 1,
-    title: 'Monstera Deliciosa XXL — Très belle feuille',
-    price: 45,
-    location: 'Lyon, 69',
-    category: 'Plantes d\'intérieur',
-    emoji: '🌿',
-    gradient: 'linear-gradient(145deg, #1b4332, #40916c)',
-    seller: 'Marie L.',
-    sellerInitial: 'M',
-    sellerColor: '#52b788',
-    rating: 4.8,
-    reviews: 23,
-    daysAgo: 1,
-    isNew: true,
-    isFavorite: false,
-  },
-  {
-    id: 2,
-    title: 'Sécateur professionnel Felco — Comme neuf',
-    price: 35,
-    location: 'Paris, 75',
-    category: 'Outils',
-    emoji: '✂️',
-    gradient: 'linear-gradient(145deg, #1e3a5f, #2563eb)',
-    seller: 'Jean-Pierre M.',
-    sellerInitial: 'J',
-    sellerColor: '#3b82f6',
-    rating: 4.9,
-    reviews: 47,
-    daysAgo: 2,
-    isNew: false,
-    isFavorite: true,
-  },
-  {
-    id: 3,
-    title: 'Cours de taille des rosiers — Atelier 3h',
-    price: 30,
-    location: 'Bordeaux, 33',
-    category: 'Cours & Ateliers',
-    emoji: '🌹',
-    gradient: 'linear-gradient(145deg, #831843, #db2777)',
-    seller: 'Sophie G.',
-    sellerInitial: 'S',
-    sellerColor: '#db2777',
-    rating: 5.0,
-    reviews: 12,
-    daysAgo: 3,
-    isNew: false,
-    isFavorite: false,
-  },
-  {
-    id: 4,
-    title: 'Graines de tomates anciennes — 8 variétés',
-    price: 8,
-    location: 'Nantes, 44',
-    category: 'Graines & Bulbes',
-    emoji: '🍅',
-    gradient: 'linear-gradient(145deg, #7c2d12, #dc2626)',
-    seller: 'René F.',
-    sellerInitial: 'R',
-    sellerColor: '#dc2626',
-    rating: 4.7,
-    reviews: 61,
-    daysAgo: 4,
-    isNew: false,
-    isFavorite: false,
-  },
-  {
-    id: 5,
-    title: 'Jardinier à domicile — Tonte, taille, entretien',
-    price: 25,
-    location: 'Toulouse, 31',
-    category: 'Services',
-    emoji: '🌳',
-    gradient: 'linear-gradient(145deg, #14532d, #16a34a)',
-    seller: 'Paul V.',
-    sellerInitial: 'P',
-    sellerColor: '#16a34a',
-    rating: 4.6,
-    reviews: 89,
-    daysAgo: 1,
-    isNew: true,
-    isFavorite: false,
-  },
-  {
-    id: 6,
-    title: 'Ficus Lyrata grande taille — Pot inclus',
-    price: 60,
-    location: 'Marseille, 13',
-    category: 'Plantes d\'intérieur',
-    emoji: '🌱',
-    gradient: 'linear-gradient(145deg, #2d6a4f, #52b788)',
-    seller: 'Claire D.',
-    sellerInitial: 'C',
-    sellerColor: '#52b788',
-    rating: 4.9,
-    reviews: 18,
-    daysAgo: 5,
-    isNew: false,
-    isFavorite: false,
-  },
-])
+const sectionRef = ref(null)
+const sy  = useScrollParallax()
+const fp1 = parallaxStyle(sectionRef, sy, 0.16)
+const fp2 = parallaxStyle(sectionRef, sy, 0.10)
+const fp3 = parallaxStyle(sectionRef, sy, 0.20)
 
-const toggleFav = (listing) => {
-  listing.isFavorite = !listing.isFavorite
+const listings = ref([])
+
+const cardPlants = [
+  '/Plant - Gradient - Outline - 01.png',
+  '/Plant - Gradient - Outline - 05.png',
+  '/Plant - Gradient - Outline - 09.png',
+  '/Plant - Gradient - Outline - 02.png',
+  '/Plant - Gradient - Outline - 11.png',
+  '/Plant - Gradient - Outline - 06.png',
+]
+
+const gradients = {
+  'plantes-interieur': 'linear-gradient(145deg, #0d2b1c, #1b5e3b)',
+  'plantes-fleuries':  'linear-gradient(145deg, #4a0d2b, #9b2360)',
+  'graines-bulbes':    'linear-gradient(145deg, #3b2006, #8b5c1c)',
+  'arbres-arbustes':   'linear-gradient(145deg, #0a2e10, #1a6e2e)',
+  'outils-materiel':   'linear-gradient(145deg, #0e1e38, #1e4a8a)',
+  'services-conseils': 'linear-gradient(145deg, #28106a, #5b2aaa)',
+  'cours-ateliers':    'linear-gradient(145deg, #3c1608, #a03810)',
+  'mobilier-jardin':   'linear-gradient(145deg, #1c2028, #48525e)',
+  'autres':            'linear-gradient(145deg, #0f2e1e, #2d6a4f)',
 }
 
-const formatPrice = (price) => `${price} €`
+function cardBg(listing) {
+  return gradients[listing.category_slug] || 'linear-gradient(145deg, #0f2e1e, #2d6a4f)'
+}
+
+function formatPrice(price) {
+  if (price == null) return 'Gratuit'
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function formatDate(d) {
+  const diff = Math.floor((new Date() - new Date(d)) / 86400000)
+  if (diff === 0) return "Aujourd'hui"
+  if (diff === 1) return 'Hier'
+  return `Il y a ${diff}j`
+}
+
+function sellerInitial(name) {
+  return (name || 'U').trim()[0].toUpperCase()
+}
+
+onMounted(async () => {
+  try {
+    const { data } = await getListings({ limit: 6 })
+    listings.value = data
+  } catch { /* silent */ }
+})
 </script>
 
 <template>
-  <section class="listings-section" id="annonces">
+  <section class="listings-section" id="annonces" v-if="listings.length > 0" ref="sectionRef">
+    <!-- Parallax plant decorations -->
+    <div class="listings-plants" aria-hidden="true">
+      <img src="/Plant - Gradient - Outline - 02.png" class="lp lp-1" :style="fp1" />
+      <img src="/Plant - Flat - 07.png"               class="lp lp-2" :style="fp2" />
+      <img src="/Plant - Gradient - Outline - 06.png" class="lp lp-3" :style="fp3" />
+    </div>
     <div class="container">
       <div class="section-header">
-        <span class="section-badge">✨ À la une</span>
+        <span class="section-badge">À la une</span>
         <h2 class="section-title">Annonces récentes</h2>
         <p class="section-subtitle">Les dernières annonces de notre communauté de jardiniers passionnés</p>
       </div>
 
       <div class="listings-grid">
-        <article v-for="listing in listings" :key="listing.id" class="listing-card">
-          <!-- Image -->
-          <div class="card-image" :style="{ background: listing.gradient }">
-            <span class="card-emoji">{{ listing.emoji }}</span>
-            <span v-if="listing.isNew" class="badge-new">Nouveau</span>
-            <button
-              class="btn-fav"
-              :class="{ active: listing.isFavorite }"
-              @click.prevent="toggleFav(listing)"
-              :aria-label="listing.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
-            >
-              <svg viewBox="0 0 24 24" :fill="listing.isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </button>
+        <article v-for="(listing, idx) in listings" :key="listing.id" class="lcard">
+
+          <!-- Image area -->
+          <div
+            class="lcard-img"
+            :style="listing.thumbnail
+              ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize:'cover', backgroundPosition:'center' }
+              : { background: cardBg(listing) }"
+          >
+            <!-- Decorative plant on gradient cards (no thumbnail) -->
+            <img
+              v-if="!listing.thumbnail"
+              :src="cardPlants[idx % cardPlants.length]"
+              class="lcard-plant"
+              aria-hidden="true"
+            />
+            <span
+              v-if="(new Date() - new Date(listing.created_at)) < 86400000*2"
+              class="badge-new"
+            >Nouveau</span>
+            <div class="lcard-img-overlay"></div>
           </div>
 
-          <!-- Content -->
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="card-category">{{ listing.category }}</span>
-              <span class="card-date">{{ listing.daysAgo === 1 ? 'Hier' : `Il y a ${listing.daysAgo}j` }}</span>
+          <!-- Body -->
+          <div class="lcard-body">
+            <div class="lcard-meta">
+              <span class="lcard-cat">{{ listing.category_name || 'Autre' }}</span>
+              <span class="lcard-date">{{ formatDate(listing.created_at) }}</span>
             </div>
+            <h3 class="lcard-title">{{ listing.title }}</h3>
+            <div class="lcard-price">{{ formatPrice(listing.price) }}</div>
 
-            <h3 class="card-title">{{ listing.title }}</h3>
-
-            <div class="card-price">{{ formatPrice(listing.price) }}</div>
-
-            <div class="card-footer">
-              <div class="card-seller">
-                <span class="seller-avatar" :style="{ background: listing.sellerColor }">
-                  {{ listing.sellerInitial }}
-                </span>
-                <div class="seller-info">
-                  <span class="seller-name">{{ listing.seller }}</span>
-                  <span class="seller-rating">
-                    ⭐ {{ listing.rating }} ({{ listing.reviews }})
-                  </span>
-                </div>
+            <div class="lcard-footer">
+              <div class="lcard-seller">
+                <span class="seller-av">{{ sellerInitial(listing.seller_name) }}</span>
+                <span class="seller-name">{{ listing.seller_name }}</span>
               </div>
-              <div class="card-location">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <div class="lcard-loc">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                   <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
-                {{ listing.location }}
+                {{ listing.city }}
               </div>
             </div>
           </div>
 
-          <a href="#" class="card-link" :aria-label="`Voir l'annonce : ${listing.title}`"></a>
+          <RouterLink :to="`/annonces/${listing.id}`" class="lcard-link" :aria-label="`Voir : ${listing.title}`" />
         </article>
       </div>
 
       <div class="listings-footer">
-        <a href="/annonces" class="btn-all">
+        <RouterLink to="/annonces" class="btn-all">
           Voir toutes les annonces
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
-        </a>
+        </RouterLink>
       </div>
     </div>
   </section>
@@ -192,7 +142,13 @@ const formatPrice = (price) => `${price} €`
 .listings-section {
   padding: 96px 0;
   background: white;
+  position: relative; overflow: hidden;
 }
+.listings-plants { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.lp { position: absolute; height: auto; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.lp-1 { width: min(30vw, 380px); top: 5%;    right: -80px; opacity: 0.10; rotate: 10deg; }
+.lp-2 { width: min(20vw, 240px); bottom: 8%; left: -50px;  opacity: 0.12; rotate: -12deg; }
+.lp-3 { width: min(16vw, 200px); top: 40%;   right: 3%;    opacity: 0.08; }
 
 .listings-grid {
   display: grid;
@@ -200,195 +156,115 @@ const formatPrice = (price) => `${price} €`
   gap: 24px;
 }
 
-.listing-card {
+.lcard {
   position: relative;
   background: white;
-  border: 1.5px solid var(--gray-100);
-  border-radius: 18px;
+  border: 1.5px solid #f0f0f0;
+  border-radius: 20px;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s var(--ease);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
+  transition: all 0.32s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
 }
-.listing-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-xl);
-  border-color: var(--forest-200);
+.lcard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 56px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.07);
+  border-color: #b7e4c7;
 }
+.lcard:hover .lcard-plant { transform: scale(1.06) translateY(-4px); }
 
-/* Image */
-.card-image {
+.lcard-img {
   position: relative;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  height: 210px; overflow: hidden;
+  display: flex; align-items: flex-end;
 }
-.card-image::after {
-  content: '';
+.lcard-img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.2));
+}
+.lcard-plant {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15));
+  right: -10px; bottom: -10px;
+  width: 52%;
+  height: auto; object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  opacity: 0.75;
+  transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; user-select: none;
 }
-
-.card-emoji {
-  font-size: 72px;
-  position: relative;
-  z-index: 1;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
-  transition: transform 0.3s var(--ease);
-}
-.listing-card:hover .card-emoji { transform: scale(1.08) rotate(-4deg); }
 
 .badge-new {
-  position: absolute;
-  top: 12px; left: 12px;
-  z-index: 2;
-  background: white;
-  color: var(--forest-700);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 100px;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  background: white; color: #2d6a4f;
+  font-size: 10.5px; font-weight: 700;
+  padding: 4px 10px; border-radius: 100px;
+  letter-spacing: 0.5px; text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.btn-fav {
-  position: absolute;
-  top: 12px; right: 12px;
-  z-index: 2;
-  width: 34px; height: 34px;
-  background: white;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.btn-fav svg { width: 15px; height: 15px; color: var(--gray-400); transition: all 0.2s; }
-.btn-fav:hover svg { color: #f43f5e; transform: scale(1.15); }
-.btn-fav.active svg { color: #f43f5e; }
-
-/* Body */
-.card-body {
+.lcard-body {
   padding: 18px 18px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
+  display: flex; flex-direction: column; gap: 10px; flex: 1;
 }
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+.lcard-meta {
+  display: flex; align-items: center; justify-content: space-between;
 }
-
-.card-category {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--forest-600);
-  background: var(--forest-50);
-  padding: 3px 10px;
-  border-radius: 100px;
-  border: 1px solid var(--forest-100);
+.lcard-cat {
+  font-size: 11.5px; font-weight: 600; color: #40916c;
+  background: #f0fdf4; padding: 3px 10px;
+  border-radius: 100px; border: 1px solid #b7e4c7;
 }
-
-.card-date {
-  font-size: 12px;
-  color: var(--gray-400);
+.lcard-date {
+  font-size: 11.5px; color: #9ca3af;
 }
-
-.card-title {
+.lcard-title {
   font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--gray-800);
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 15px; font-weight: 600;
+  color: #1f2937; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
 }
-
-.card-price {
-  font-family: var(--font-heading);
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--forest-800);
-  letter-spacing: -0.5px;
+.lcard-price {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 24px; font-weight: 700;
+  color: #1b4332; letter-spacing: -0.5px;
 }
-
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--gray-100);
+.lcard-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: auto; padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
 }
-
-.card-seller { display: flex; align-items: center; gap: 9px; }
-
-.seller-avatar {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 13px;
-  font-weight: 700;
+.lcard-seller { display: flex; align-items: center; gap: 8px; }
+.seller-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #52b788; color: white;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-
-.seller-info { display: flex; flex-direction: column; gap: 1px; }
-.seller-name { font-size: 12.5px; font-weight: 600; color: var(--gray-700); }
-.seller-rating { font-size: 11px; color: var(--gray-400); }
-
-.card-location {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--gray-400);
+.seller-name { font-size: 12.5px; font-weight: 600; color: #374151; }
+.lcard-loc {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; color: #9ca3af;
 }
-.card-location svg { color: var(--gray-300); flex-shrink: 0; }
-
-/* Invisible full-card link */
-.card-link {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+.lcard-link {
+  position: absolute; inset: 0; z-index: 1;
 }
-.btn-fav { z-index: 2; }
 
-/* Footer */
-.listings-footer {
-  text-align: center;
-  margin-top: 48px;
-}
+.container { position: relative; z-index: 1; }
+.listings-footer { text-align: center; margin-top: 52px; }
 .btn-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--forest-700);
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 14px 28px;
-  border-radius: 12px;
-  transition: all 0.25s var(--ease);
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #1b4332; color: white;
+  font-size: 15px; font-weight: 600;
+  padding: 14px 30px; border-radius: 14px;
+  transition: all 0.25s;
 }
-.btn-all:hover { background: var(--forest-800); transform: translateY(-2px); box-shadow: var(--shadow-green); }
+.btn-all:hover {
+  background: #2d6a4f; transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(27,67,50,0.28);
+}
 
-@media (max-width: 1024px) { .listings-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1024px) { .listings-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 640px)  { .listings-grid { grid-template-columns: 1fr; } }
 </style>
