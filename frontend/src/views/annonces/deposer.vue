@@ -26,16 +26,29 @@ const form = reactive({
 const step = ref(1) // 1 = infos, 2 = photos + contact
 
 const CONTACT_OPTIONS = [
-  { value: 'message', label: 'Messagerie interne', icon: '💬' },
-  { value: 'phone',   label: 'Téléphone uniquement', icon: '📞' },
-  { value: 'both',    label: 'Les deux', icon: '🔀' },
+  { value: 'message', label: 'Messagerie interne' },
+  { value: 'phone',   label: 'Téléphone uniquement' },
+  { value: 'both',    label: 'Les deux' },
 ]
 
-function onFilesChange(e) {
-  const selected = Array.from(e.target.files || [])
-  const combined = [...files.value, ...selected].slice(0, 5)
+const isDragging = ref(false)
+
+function addFiles(incoming) {
+  const combined = [...files.value, ...Array.from(incoming)].slice(0, 5)
   files.value = combined
   previews.value = combined.map((f) => URL.createObjectURL(f))
+}
+
+function onFilesChange(e) {
+  addFiles(e.target.files || [])
+}
+
+function onDrop(e) {
+  isDragging.value = false
+  const dropped = Array.from(e.dataTransfer?.files || []).filter((f) =>
+    ['image/jpeg', 'image/png', 'image/webp'].includes(f.type)
+  )
+  addFiles(dropped)
 }
 
 function removeFile(index) {
@@ -45,9 +58,10 @@ function removeFile(index) {
 }
 
 const step1Valid = computed(() => form.title.trim() && form.price && form.city.trim())
+const step2Valid = computed(() => step1Valid.value && files.value.length > 0)
 
 async function submit() {
-  if (!step1Valid.value) return
+  if (!step2Valid.value) return
 
   error.value = ''
   loading.value = true
@@ -188,9 +202,15 @@ onMounted(async () => {
 
           <!-- Photo upload -->
           <div class="field">
-            <label>Photos <span class="field-hint-inline">(optionnel, max. 5)</span></label>
+            <label>Photos <span class="req">*</span> <span class="field-hint-inline">(max. 5)</span></label>
 
-            <div class="upload-zone" :class="{ 'has-photos': previews.length > 0 }">
+            <div
+              class="upload-zone"
+              :class="{ 'has-photos': previews.length > 0, dragging: isDragging }"
+              @dragover.prevent="isDragging = true"
+              @dragleave.prevent="isDragging = false"
+              @drop.prevent="onDrop"
+            >
               <div v-if="previews.length > 0" class="previews-grid">
                 <div v-for="(src, i) in previews" :key="i" class="preview-thumb">
                   <img :src="src" alt="Photo" />
@@ -227,7 +247,6 @@ onMounted(async () => {
                 :class="['contact-option', { selected: form.contact_method === opt.value }]"
               >
                 <input type="radio" :value="opt.value" v-model="form.contact_method" class="radio-hidden" />
-                <span class="opt-icon">{{ opt.icon }}</span>
                 <span class="opt-label">{{ opt.label }}</span>
               </label>
             </div>
@@ -239,11 +258,12 @@ onMounted(async () => {
           </div>
 
           <!-- Error -->
-          <p v-if="error" class="form-error">{{ error }}</p>
+          <p v-if="files.length === 0" class="form-error form-error--soft">Au moins une photo est requise pour publier.</p>
+          <p v-else-if="error" class="form-error">{{ error }}</p>
 
           <div class="step-actions">
             <button type="button" class="btn-back-step" @click="step = 1">← Retour</button>
-            <button type="submit" class="btn-submit" :disabled="loading || !step1Valid">
+            <button type="submit" class="btn-submit" :disabled="loading || !step2Valid">
               <span v-if="loading" class="spinner"></span>
               {{ loading ? 'Publication…' : 'Publier l\'annonce' }}
             </button>
@@ -521,12 +541,16 @@ textarea { resize: vertical; }
   gap: 10px;
 }
 
+.upload-zone.dragging {
+  border-color: var(--forest-500);
+  background: var(--forest-50);
+}
+
 .contact-option {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 14px 8px;
+  justify-content: center;
+  padding: 13px 12px;
   border: 2px solid var(--gray-200);
   border-radius: 12px;
   cursor: pointer;
@@ -538,8 +562,7 @@ textarea { resize: vertical; }
 
 .radio-hidden { display: none; }
 
-.opt-icon { font-size: 24px; }
-.opt-label { font-size: 12.5px; font-weight: 600; color: var(--gray-600); }
+.opt-label { font-size: 13px; font-weight: 600; color: var(--gray-600); }
 .contact-option.selected .opt-label { color: var(--forest-700); }
 
 /* Error */
@@ -551,6 +574,11 @@ textarea { resize: vertical; }
   border-radius: 9px;
   padding: 10px 14px;
   margin-bottom: 16px;
+}
+.form-error--soft {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
 }
 
 /* Actions */

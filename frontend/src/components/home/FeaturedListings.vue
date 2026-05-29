@@ -1,123 +1,54 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getListings } from '@/api/listings.js'
 
-const listings = ref([
-  {
-    id: 1,
-    title: 'Monstera Deliciosa XXL — Très belle feuille',
-    price: 45,
-    location: 'Lyon, 69',
-    category: 'Plantes d\'intérieur',
-    emoji: '🌿',
-    gradient: 'linear-gradient(145deg, #1b4332, #40916c)',
-    seller: 'Marie L.',
-    sellerInitial: 'M',
-    sellerColor: '#52b788',
-    rating: 4.8,
-    reviews: 23,
-    daysAgo: 1,
-    isNew: true,
-    isFavorite: false,
-  },
-  {
-    id: 2,
-    title: 'Sécateur professionnel Felco — Comme neuf',
-    price: 35,
-    location: 'Paris, 75',
-    category: 'Outils',
-    emoji: '✂️',
-    gradient: 'linear-gradient(145deg, #1e3a5f, #2563eb)',
-    seller: 'Jean-Pierre M.',
-    sellerInitial: 'J',
-    sellerColor: '#3b82f6',
-    rating: 4.9,
-    reviews: 47,
-    daysAgo: 2,
-    isNew: false,
-    isFavorite: true,
-  },
-  {
-    id: 3,
-    title: 'Cours de taille des rosiers — Atelier 3h',
-    price: 30,
-    location: 'Bordeaux, 33',
-    category: 'Cours & Ateliers',
-    emoji: '🌹',
-    gradient: 'linear-gradient(145deg, #831843, #db2777)',
-    seller: 'Sophie G.',
-    sellerInitial: 'S',
-    sellerColor: '#db2777',
-    rating: 5.0,
-    reviews: 12,
-    daysAgo: 3,
-    isNew: false,
-    isFavorite: false,
-  },
-  {
-    id: 4,
-    title: 'Graines de tomates anciennes — 8 variétés',
-    price: 8,
-    location: 'Nantes, 44',
-    category: 'Graines & Bulbes',
-    emoji: '🍅',
-    gradient: 'linear-gradient(145deg, #7c2d12, #dc2626)',
-    seller: 'René F.',
-    sellerInitial: 'R',
-    sellerColor: '#dc2626',
-    rating: 4.7,
-    reviews: 61,
-    daysAgo: 4,
-    isNew: false,
-    isFavorite: false,
-  },
-  {
-    id: 5,
-    title: 'Jardinier à domicile — Tonte, taille, entretien',
-    price: 25,
-    location: 'Toulouse, 31',
-    category: 'Services',
-    emoji: '🌳',
-    gradient: 'linear-gradient(145deg, #14532d, #16a34a)',
-    seller: 'Paul V.',
-    sellerInitial: 'P',
-    sellerColor: '#16a34a',
-    rating: 4.6,
-    reviews: 89,
-    daysAgo: 1,
-    isNew: true,
-    isFavorite: false,
-  },
-  {
-    id: 6,
-    title: 'Ficus Lyrata grande taille — Pot inclus',
-    price: 60,
-    location: 'Marseille, 13',
-    category: 'Plantes d\'intérieur',
-    emoji: '🌱',
-    gradient: 'linear-gradient(145deg, #2d6a4f, #52b788)',
-    seller: 'Claire D.',
-    sellerInitial: 'C',
-    sellerColor: '#52b788',
-    rating: 4.9,
-    reviews: 18,
-    daysAgo: 5,
-    isNew: false,
-    isFavorite: false,
-  },
-])
+const listings = ref([])
 
-const toggleFav = (listing) => {
-  listing.isFavorite = !listing.isFavorite
+const gradients = {
+  'plantes-interieur': 'linear-gradient(145deg, #1b4332, #40916c)',
+  'plantes-fleuries':  'linear-gradient(145deg, #831843, #db2777)',
+  'graines-bulbes':    'linear-gradient(145deg, #7c2d12, #dc2626)',
+  'arbres-arbustes':   'linear-gradient(145deg, #14532d, #16a34a)',
+  'outils-materiel':   'linear-gradient(145deg, #1e3a5f, #2563eb)',
+  'services-conseils': 'linear-gradient(145deg, #4c1d95, #7c3aed)',
+  'cours-ateliers':    'linear-gradient(145deg, #7c2d12, #ea580c)',
+  'mobilier-jardin':   'linear-gradient(145deg, #374151, #6b7280)',
+  'autres':            'linear-gradient(145deg, #2d6a4f, #52b788)',
 }
 
-const formatPrice = (price) => `${price} €`
+function cardBg(listing) {
+  return gradients[listing.category_slug] || 'linear-gradient(145deg, #2d6a4f, #52b788)'
+}
+
+function formatPrice(price) {
+  if (price == null) return 'Gratuit'
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
+}
+
+function formatDate(d) {
+  const diff = Math.floor((new Date() - new Date(d)) / 86400000)
+  if (diff === 0) return "Aujourd'hui"
+  if (diff === 1) return 'Hier'
+  return `Il y a ${diff}j`
+}
+
+function sellerInitial(name) {
+  return (name || 'U').trim()[0].toUpperCase()
+}
+
+onMounted(async () => {
+  try {
+    const { data } = await getListings({ limit: 6 })
+    listings.value = data
+  } catch { /* silent */ }
+})
 </script>
 
 <template>
-  <section class="listings-section" id="annonces">
+  <section class="listings-section" id="annonces" v-if="listings.length > 0">
     <div class="container">
       <div class="section-header">
-        <span class="section-badge">✨ À la une</span>
+        <span class="section-badge">À la une</span>
         <h2 class="section-title">Annonces récentes</h2>
         <p class="section-subtitle">Les dernières annonces de notre communauté de jardiniers passionnés</p>
       </div>
@@ -125,26 +56,23 @@ const formatPrice = (price) => `${price} €`
       <div class="listings-grid">
         <article v-for="listing in listings" :key="listing.id" class="listing-card">
           <!-- Image -->
-          <div class="card-image" :style="{ background: listing.gradient }">
-            <span class="card-emoji">{{ listing.emoji }}</span>
-            <span v-if="listing.isNew" class="badge-new">Nouveau</span>
-            <button
-              class="btn-fav"
-              :class="{ active: listing.isFavorite }"
-              @click.prevent="toggleFav(listing)"
-              :aria-label="listing.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
-            >
-              <svg viewBox="0 0 24 24" :fill="listing.isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </button>
+          <div
+            class="card-image"
+            :style="listing.thumbnail
+              ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+              : { background: cardBg(listing) }"
+          >
+            <span
+              v-if="(new Date() - new Date(listing.created_at)) < 86400000 * 2"
+              class="badge-new"
+            >Nouveau</span>
           </div>
 
           <!-- Content -->
           <div class="card-body">
             <div class="card-meta">
-              <span class="card-category">{{ listing.category }}</span>
-              <span class="card-date">{{ listing.daysAgo === 1 ? 'Hier' : `Il y a ${listing.daysAgo}j` }}</span>
+              <span class="card-category">{{ listing.category_name || 'Autre' }}</span>
+              <span class="card-date">{{ formatDate(listing.created_at) }}</span>
             </div>
 
             <h3 class="card-title">{{ listing.title }}</h3>
@@ -153,36 +81,31 @@ const formatPrice = (price) => `${price} €`
 
             <div class="card-footer">
               <div class="card-seller">
-                <span class="seller-avatar" :style="{ background: listing.sellerColor }">
-                  {{ listing.sellerInitial }}
-                </span>
+                <span class="seller-avatar">{{ sellerInitial(listing.seller_name) }}</span>
                 <div class="seller-info">
-                  <span class="seller-name">{{ listing.seller }}</span>
-                  <span class="seller-rating">
-                    ⭐ {{ listing.rating }} ({{ listing.reviews }})
-                  </span>
+                  <span class="seller-name">{{ listing.seller_name }}</span>
                 </div>
               </div>
               <div class="card-location">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                   <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
                 </svg>
-                {{ listing.location }}
+                {{ listing.city }}
               </div>
             </div>
           </div>
 
-          <a href="#" class="card-link" :aria-label="`Voir l'annonce : ${listing.title}`"></a>
+          <RouterLink :to="`/annonces/${listing.id}`" class="card-link" :aria-label="`Voir : ${listing.title}`" />
         </article>
       </div>
 
       <div class="listings-footer">
-        <a href="/annonces" class="btn-all">
+        <RouterLink to="/annonces" class="btn-all">
           Voir toutes les annonces
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
-        </a>
+        </RouterLink>
       </div>
     </div>
   </section>
@@ -192,6 +115,22 @@ const formatPrice = (price) => `${price} €`
 .listings-section {
   padding: 96px 0;
   background: white;
+}
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--forest-50);
+  border: 1.5px solid var(--forest-200);
+  color: var(--forest-700);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 18px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .listings-grid {
@@ -217,13 +156,9 @@ const formatPrice = (price) => `${price} €`
   border-color: var(--forest-200);
 }
 
-/* Image */
 .card-image {
   position: relative;
   height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 .card-image::after {
@@ -232,15 +167,6 @@ const formatPrice = (price) => `${price} €`
   inset: 0;
   background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.15));
 }
-
-.card-emoji {
-  font-size: 72px;
-  position: relative;
-  z-index: 1;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
-  transition: transform 0.3s var(--ease);
-}
-.listing-card:hover .card-emoji { transform: scale(1.08) rotate(-4deg); }
 
 .badge-new {
   position: absolute;
@@ -256,26 +182,6 @@ const formatPrice = (price) => `${price} €`
   text-transform: uppercase;
 }
 
-.btn-fav {
-  position: absolute;
-  top: 12px; right: 12px;
-  z-index: 2;
-  width: 34px; height: 34px;
-  background: white;
-  border: none;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.btn-fav svg { width: 15px; height: 15px; color: var(--gray-400); transition: all 0.2s; }
-.btn-fav:hover svg { color: #f43f5e; transform: scale(1.15); }
-.btn-fav.active svg { color: #f43f5e; }
-
-/* Body */
 .card-body {
   padding: 18px 18px 16px;
   display: flex;
@@ -340,18 +246,16 @@ const formatPrice = (price) => `${price} €`
 .seller-avatar {
   width: 30px; height: 30px;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: var(--forest-500);
   color: white;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
 
 .seller-info { display: flex; flex-direction: column; gap: 1px; }
 .seller-name { font-size: 12.5px; font-weight: 600; color: var(--gray-700); }
-.seller-rating { font-size: 11px; color: var(--gray-400); }
 
 .card-location {
   display: flex;
@@ -362,15 +266,12 @@ const formatPrice = (price) => `${price} €`
 }
 .card-location svg { color: var(--gray-300); flex-shrink: 0; }
 
-/* Invisible full-card link */
 .card-link {
   position: absolute;
   inset: 0;
   z-index: 0;
 }
-.btn-fav { z-index: 2; }
 
-/* Footer */
 .listings-footer {
   text-align: center;
   margin-top: 48px;

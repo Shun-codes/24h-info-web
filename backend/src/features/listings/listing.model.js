@@ -145,10 +145,12 @@ export const ListingModel = {
   async getFavorites(userId) {
     const { rows } = await db.query(
       `SELECT l.id, l.title, l.price, l.city, l.created_at,
-              c.name AS category_name,
+              u.name AS seller_name,
+              c.name AS category_name, c.slug AS category_slug,
               (SELECT url FROM listing_images WHERE listing_id = l.id ORDER BY position LIMIT 1) AS thumbnail
        FROM listings l
        JOIN favorites f ON f.listing_id = l.id
+       JOIN users u ON u.id = l.user_id
        LEFT JOIN categories c ON c.id = l.category_id
        WHERE f.user_id = $1 AND l.is_hidden = false
        ORDER BY f.created_at DESC`,

@@ -1,48 +1,73 @@
 <script setup>
-const categories = [
-  { name: 'Plantes d\'intérieur', icon: '🌿', count: 847,  gradient: 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)' },
-  { name: 'Plantes fleuries',     icon: '🌸', count: 523,  gradient: 'linear-gradient(135deg, #831843 0%, #be185d 100%)' },
-  { name: 'Graines & Bulbes',     icon: '🌱', count: 312,  gradient: 'linear-gradient(135deg, #713f12 0%, #d97706 100%)' },
-  { name: 'Arbres & Arbustes',    icon: '🌳', count: 189,  gradient: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)' },
-  { name: 'Outils & Matériel',    icon: '🔧', count: 421,  gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)' },
-  { name: 'Services & Conseils',  icon: '🤝', count: 156,  gradient: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)' },
-  { name: 'Cours & Ateliers',     icon: '📚', count: 89,   gradient: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)' },
-  { name: 'Mobilier de jardin',   icon: '🪑', count: 234,  gradient: 'linear-gradient(135deg, #374151 0%, #6b7280 100%)' },
-]
+import { ref, onMounted } from 'vue'
+import { getCategories } from '@/api/categories.js'
+
+const categories = ref([])
+
+const gradients = {
+  'plantes-interieur': 'linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%)',
+  'plantes-fleuries':  'linear-gradient(135deg, #831843 0%, #be185d 100%)',
+  'graines-bulbes':    'linear-gradient(135deg, #713f12 0%, #d97706 100%)',
+  'arbres-arbustes':   'linear-gradient(135deg, #14532d 0%, #16a34a 100%)',
+  'outils-materiel':   'linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%)',
+  'services-conseils': 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%)',
+  'cours-ateliers':    'linear-gradient(135deg, #7c2d12 0%, #ea580c 100%)',
+  'mobilier-jardin':   'linear-gradient(135deg, #374151 0%, #6b7280 100%)',
+  'autres':            'linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)',
+}
+
+function catGradient(slug) {
+  return gradients[slug] || 'linear-gradient(135deg, #2d6a4f 0%, #52b788 100%)'
+}
+
+function catInitial(name) {
+  return (name || '?').trim()[0].toUpperCase()
+}
+
+onMounted(async () => {
+  try {
+    const { data } = await getCategories()
+    categories.value = data
+  } catch { /* silent */ }
+})
 </script>
 
 <template>
   <section class="categories-section" id="categories">
     <div class="container">
       <div class="section-header">
-        <span class="section-badge">🗂️ Explorer</span>
+        <span class="section-badge">Explorer</span>
         <h2 class="section-title">Toutes les catégories</h2>
         <p class="section-subtitle">Des plantes aux services, trouvez exactement ce dont vous avez besoin</p>
       </div>
 
       <div class="categories-grid">
-        <a v-for="cat in categories" :key="cat.name" href="#" class="cat-card">
-          <div class="cat-bg" :style="{ background: cat.gradient }">
-            <span class="cat-icon">{{ cat.icon }}</span>
+        <RouterLink
+          v-for="cat in categories"
+          :key="cat.slug"
+          :to="`/annonces?category=${cat.slug}`"
+          class="cat-card"
+        >
+          <div class="cat-bg" :style="{ background: catGradient(cat.slug) }">
+            <span class="cat-initial">{{ catInitial(cat.name) }}</span>
             <div class="cat-glow"></div>
           </div>
           <div class="cat-info">
             <span class="cat-name">{{ cat.name }}</span>
-            <span class="cat-count">{{ cat.count }} annonces</span>
           </div>
           <svg class="cat-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
-        </a>
+        </RouterLink>
       </div>
 
       <div class="see-all">
-        <a href="/categories" class="see-all-btn">
-          Voir toutes les catégories
+        <RouterLink to="/annonces" class="see-all-btn">
+          Voir toutes les annonces
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
-        </a>
+        </RouterLink>
       </div>
     </div>
   </section>
@@ -52,6 +77,22 @@ const categories = [
 .categories-section {
   padding: 96px 0;
   background: var(--cream);
+}
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--forest-50);
+  border: 1.5px solid var(--forest-200);
+  color: var(--forest-700);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 18px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
 }
 
 .categories-grid {
@@ -110,7 +151,14 @@ const categories = [
   border-radius: 12px;
 }
 
-.cat-icon { font-size: 26px; position: relative; z-index: 1; }
+.cat-initial {
+  font-size: 20px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-heading);
+}
 
 .cat-info {
   display: flex;
@@ -129,12 +177,6 @@ const categories = [
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.cat-count {
-  font-size: 12.5px;
-  color: var(--gray-400);
-  font-weight: 400;
 }
 
 .cat-arrow {

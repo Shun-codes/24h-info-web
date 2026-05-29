@@ -30,10 +30,7 @@ const logout = () => {
       </a>
 
       <nav class="nav-links">
-        <a href="#annonces">Annonces</a>
-        <a href="#categories">Catégories</a>
-        <a href="#services">Services</a>
-        <a href="#comment-ca-marche">Comment ça marche</a>
+        <RouterLink to="/annonces">Annonces</RouterLink>
       </nav>
 
       <div class="nav-actions">
@@ -56,10 +53,7 @@ const logout = () => {
     </div>
 
     <div :class="['mobile-drawer', { open: menuOpen }]">
-      <a href="#annonces" @click="menuOpen=false">Annonces</a>
-      <a href="#categories" @click="menuOpen=false">Catégories</a>
-      <a href="#services" @click="menuOpen=false">Services</a>
-      <a href="#comment-ca-marche" @click="menuOpen=false">Comment ça marche</a>
+      <RouterLink to="/annonces" @click="menuOpen=false">Annonces</RouterLink>
       <div class="mobile-divider"></div>
       <a v-if="auth.isAuthenticated" href="/profil" class="mobile-login" @click="menuOpen=false">Mon profil</a>
       <button v-if="auth.isAuthenticated" class="mobile-login logout-btn" @click="logout">Se déconnecter</button>
