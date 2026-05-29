@@ -1,16 +1,5 @@
 import bcrypt from 'bcryptjs'
-import pg from 'pg'
-import { config } from 'dotenv'
-
-config()
-
-const pool = new pg.Pool({
-  host:     process.env.DB_HOST     || 'localhost',
-  port:     Number(process.env.DB_PORT) || 5432,
-  database: process.env.DB_NAME     || 'lunivert',
-  user:     process.env.DB_USER     || 'postgres',
-  password: process.env.DB_PASSWORD || 'lunivert_dev',
-})
+import pool from '../src/config/database.js'
 
 const ACCOUNTS = [
   { email: 'user@lunivert.fr',  password: 'User1234',  name: 'Jean Utilisateur', role: 'user',      city: 'Lyon' },

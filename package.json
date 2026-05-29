@@ -18,7 +18,7 @@
     "docker:down": "sh ./scripts/compose.sh down",
     "docker:logs": "sh ./scripts/compose.sh logs -f",
     "docker:restart": "sh ./scripts/compose.sh down && sh ./scripts/compose.sh up --build -d",
-    "db:seed": "npm run db:seed --prefix backend"
+    "db:seed": "docker compose exec -T backend npm run db:seed"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

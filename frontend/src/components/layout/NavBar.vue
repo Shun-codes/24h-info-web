@@ -1,16 +1,12 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 
-const scrolled = ref(false)
+const scrolled = ref(true)
 const menuOpen = ref(false)
 const auth = useAuthStore()
 const router = useRouter()
-
-const onScroll = () => { scrolled.value = window.scrollY > 40 }
-onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 const logout = () => {
   auth.logout()
