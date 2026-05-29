@@ -16,7 +16,7 @@ services:
       retries: 10
 
   backend:
-    image: ${REGISTRY_PREFIX}/backend:latest
+    image: ghcr.io/shun-codes/lunivert-backend:latest
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -38,7 +38,7 @@ services:
         condition: service_healthy
 
   frontend:
-    image: ${REGISTRY_PREFIX}/frontend:latest
+    image: ghcr.io/shun-codes/lunivert-frontend:latest
     restart: unless-stopped
     ports:
       - "80:80"
