@@ -7,8 +7,31 @@ on:
     branches: [main]
 
 jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install deps
+        run: |
+          npm install --prefix backend
+          npm install --prefix frontend
+
+      - name: Run tests
+        run: npm test
+
   build:
     name: Build & push Docker images
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -64,6 +87,10 @@ jobs:
             docker ps -aq | xargs -r docker rm -f
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
+            # Attendre que postgres et le backend soient prêts
+            until docker compose -f docker-compose.prod.yml exec -T postgres pg_isready -U postgres -d lunivert 2>/dev/null; do sleep 2; done
+            sleep 5
+            docker compose -f docker-compose.prod.yml exec -T backend node database/seed.js
             docker image prune -f
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
