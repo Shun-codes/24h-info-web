@@ -11,7 +11,7 @@ export const CategoryModel = {
          AND l.is_hidden = false
          AND l.expires_at > NOW()
        GROUP BY c.id
-       ORDER BY c.name`,
+       ORDER BY CASE WHEN c.slug = 'autres' THEN 1 ELSE 0 END, c.name`,
     )
     return rows
   },
