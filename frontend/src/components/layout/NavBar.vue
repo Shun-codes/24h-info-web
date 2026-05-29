@@ -1,12 +1,22 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
 
 const scrolled = ref(false)
 const menuOpen = ref(false)
+const auth = useAuthStore()
+const router = useRouter()
 
 const onScroll = () => { scrolled.value = window.scrollY > 40 }
 onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
 onUnmounted(() => window.removeEventListener('scroll', onScroll))
+
+const logout = () => {
+  auth.logout()
+  menuOpen.value = false
+  router.push({ name: 'home' })
+}
 </script>
 
 <template>
@@ -31,7 +41,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
       </nav>
 
       <div class="nav-actions">
-        <a href="/connexion" class="btn-ghost">Se connecter</a>
+        <a v-if="auth.isAuthenticated" href="/profil" class="btn-ghost">Mon profil</a>
+        <button v-if="auth.isAuthenticated" class="btn-ghost logout-btn" @click="logout">Se déconnecter</button>
+        <a v-else href="/connexion" class="btn-ghost">Se connecter</a>
         <a href="/deposer" class="btn-cta">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M12 5v14M5 12h14"/>
@@ -53,7 +65,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
       <a href="#services" @click="menuOpen=false">Services</a>
       <a href="#comment-ca-marche" @click="menuOpen=false">Comment ça marche</a>
       <div class="mobile-divider"></div>
-      <a href="/connexion" class="mobile-login">Se connecter</a>
+      <a v-if="auth.isAuthenticated" href="/profil" class="mobile-login" @click="menuOpen=false">Mon profil</a>
+      <button v-if="auth.isAuthenticated" class="mobile-login logout-btn" @click="logout">Se déconnecter</button>
+      <a v-else href="/connexion" class="mobile-login">Se connecter</a>
       <a href="/deposer" class="mobile-cta">Déposer une annonce</a>
     </div>
   </header>
@@ -147,6 +161,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .scrolled .btn-ghost { color: var(--gray-600); }
 .scrolled .btn-ghost:hover { background: var(--forest-50); color: var(--forest-700); }
 
+.logout-btn {
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+
 .btn-cta {
   display: flex;
   align-items: center;
@@ -212,6 +232,12 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .mobile-divider { height: 1px; background: var(--gray-100); margin: 8px 0; }
 
 .mobile-login { font-weight: 500; }
+.mobile-login.logout-btn {
+  background: none;
+  border: none;
+  text-align: left;
+  width: 100%;
+}
 .mobile-cta {
   background: var(--forest-600) !important;
   color: white !important;
