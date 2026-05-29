@@ -20,7 +20,7 @@
     <div class="container">
       <div class="cta-inner">
         <div class="cta-content">
-          <span class="cta-badge">🌿 Rejoignez la communauté</span>
+          <span class="cta-badge">Rejoignez la communauté</span>
           <h2 class="cta-title">
             Prêt à faire pousser<br>
             <em>votre jardin idéal</em> ?
@@ -46,22 +46,8 @@
           </div>
 
           <p class="cta-reassurance">
-            ✓ Gratuit &nbsp;·&nbsp; ✓ Sans carte bancaire &nbsp;·&nbsp; ✓ Annulation à tout moment
+            Gratuit &nbsp;·&nbsp; Sans carte bancaire &nbsp;·&nbsp; Annulation à tout moment
           </p>
-        </div>
-
-        <!-- Testimonials mini -->
-        <div class="cta-testimonials">
-          <div v-for="t in testimonials" :key="t.name" class="testimonial-card">
-            <p class="t-text">"{{ t.text }}"</p>
-            <div class="t-author">
-              <span class="t-avatar" :style="{ background: t.color }">{{ t.initial }}</span>
-              <div>
-                <span class="t-name">{{ t.name }}</span>
-                <span class="t-sub">{{ t.sub }}</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -69,22 +55,6 @@
 </template>
 
 <script setup>
-const testimonials = [
-  {
-    name: 'Marie L.',
-    initial: 'M',
-    color: '#52b788',
-    sub: 'Jardinière passionnée, Lyon',
-    text: 'J\'ai vendu 3 monsteras en 2 jours. La plateforme est simple et la communauté est adorable !',
-  },
-  {
-    name: 'Jean-Pierre M.',
-    initial: 'J',
-    color: '#2563eb',
-    sub: 'Jardinier professionnel, Paris',
-    text: 'Mes cours de jardinage ont trouvé de nouveaux élèves grâce à L\'Uni Vert. Excellent outil !',
-  },
-]
 </script>
 
 <style scoped>
@@ -125,10 +95,9 @@ const testimonials = [
 .cta-inner {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 64px;
-  align-items: center;
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto;
 }
 
 .cta-badge {
@@ -161,7 +130,7 @@ const testimonials = [
   color: rgba(255,255,255,0.65);
   line-height: 1.75;
   max-width: 500px;
-  margin-bottom: 36px;
+  margin: 0 auto 36px;
 }
 
 .cta-actions {
@@ -206,67 +175,7 @@ const testimonials = [
   color: rgba(255,255,255,0.45);
 }
 
-/* Testimonials */
-.cta-testimonials {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.testimonial-card {
-  background: rgba(255,255,255,0.07);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
-  padding: 22px 24px;
-  transition: all 0.25s;
-}
-.testimonial-card:hover { background: rgba(255,255,255,0.1); }
-
-.t-text {
-  font-size: 14.5px;
-  color: rgba(255,255,255,0.8);
-  line-height: 1.65;
-  font-style: italic;
-  margin-bottom: 16px;
-}
-
-.t-author {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.t-avatar {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.t-name {
-  display: block;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: white;
-}
-.t-sub {
-  display: block;
-  font-size: 12px;
-  color: rgba(255,255,255,0.45);
-}
-
-@media (max-width: 900px) {
-  .cta-inner { grid-template-columns: 1fr; gap: 40px; }
-  .cta-testimonials { flex-direction: row; }
-}
 @media (max-width: 640px) {
-  .cta-testimonials { flex-direction: column; }
   .cta-actions { flex-direction: column; align-items: stretch; text-align: center; }
   .cta-btn-primary, .cta-btn-ghost { justify-content: center; }
 }

@@ -32,7 +32,7 @@ function cardBg(listing) {
 
 function formatPrice(price) {
   if (price == null) return 'Gratuit'
-  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function formatDate(d) {
@@ -98,7 +98,6 @@ onMounted(async () => {
 
       <!-- Empty -->
       <div v-else-if="favorites.length === 0" class="empty-state">
-        <div class="empty-icon">🤍</div>
         <h2>Aucun favori pour l'instant</h2>
         <p>Parcourez les annonces et cliquez sur ❤️ pour sauvegarder vos coups de cœur.</p>
         <RouterLink to="/annonces" class="btn-browse">Parcourir les annonces</RouterLink>
@@ -117,9 +116,6 @@ onMounted(async () => {
                 ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }
                 : { background: cardBg(listing) }"
             >
-              <span v-if="!listing.thumbnail" class="card-emoji">
-                {{ categories.find(c => c.slug === listing.category_slug)?.icon || '🌿' }}
-              </span>
 
               <!-- Remove button -->
               <button

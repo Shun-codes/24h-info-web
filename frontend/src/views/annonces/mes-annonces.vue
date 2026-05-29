@@ -22,7 +22,7 @@ const deletingId = ref(null)
 
 function formatPrice(price) {
   if (price == null) return 'Gratuit'
-  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function formatDate(d) {
@@ -146,7 +146,6 @@ onMounted(async () => {
 
       <!-- Empty -->
       <div v-else-if="listings.length === 0" class="empty-state">
-        <div class="empty-icon">📋</div>
         <h2>Aucune annonce pour l'instant</h2>
         <p>Déposez votre première annonce en quelques clics.</p>
         <RouterLink to="/deposer" class="btn-empty-cta">Déposer une annonce</RouterLink>
@@ -162,8 +161,7 @@ onMounted(async () => {
         >
           <!-- Thumbnail -->
           <div class="row-thumb" :style="listing.thumbnail ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}">
-            <span v-if="!listing.thumbnail" class="thumb-emoji">🌿</span>
-          </div>
+            </div>
 
           <!-- Info -->
           <div class="row-info">
