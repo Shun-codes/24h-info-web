@@ -138,7 +138,7 @@ docker compose down -v
 
 ## Comptes de test
 
-> Créés automatiquement via `npm run db:seed` (à lancer une fois après le démarrage).
+> Créés automatiquement via `npm run db:seed` dans docker.
 
 | Rôle | Email | Mot de passe |
 |---|---|---|
