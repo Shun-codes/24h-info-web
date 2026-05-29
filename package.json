@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n \"front,back\" -c \"cyan,green\" \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
-    "start-dev": "sh ./scripts/compose.sh up -d",
-    "stop-dev": "sh ./scripts/compose.sh down",
+    "start-dev": "docker compose up -d",
+    "stop-dev": "docker compose down",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend",
     "install:all": "npm install --prefix frontend && npm install --prefix backend",
@@ -13,12 +13,11 @@
     "env:copy": "cp -n .env.example .env && cp -n backend/.env.example backend/.env",
     "build": "npm run build --prefix frontend",
     "start": "npm run start --prefix backend",
-    "docker:up": "sh ./scripts/compose.sh up --build",
-    "docker:up:detached": "sh ./scripts/compose.sh up --build -d",
-    "docker:down": "sh ./scripts/compose.sh down",
-    "docker:logs": "sh ./scripts/compose.sh logs -f",
-    "docker:restart": "sh ./scripts/compose.sh down && sh ./scripts/compose.sh up --build -d",
-    "db:seed": "docker compose exec -T backend npm run db:seed"
+    "docker:up": "docker compose up --build",
+    "docker:up:detached": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:restart": "docker compose down && docker compose up --build -d"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
