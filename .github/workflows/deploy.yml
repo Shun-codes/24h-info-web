@@ -31,7 +31,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile.prod
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/${{ github.repository }}/backend:latest
+          tags: ghcr.io/shun-codes/lunivert-backend:latest
 
       - name: Build & push frontend
         uses: docker/build-push-action@v5
@@ -39,7 +39,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile.prod
           push: ${{ github.event_name == 'push' }}
-          tags: ghcr.io/${{ github.repository }}/frontend:latest
+          tags: ghcr.io/shun-codes/lunivert-frontend:latest
 
   deploy:
     name: Deploy to VPS
