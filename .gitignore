@@ -36,4 +36,4 @@ Thumbs.db
 *.sw?
 
 # Upload
-backend/public/uploads
+backend/uploads
