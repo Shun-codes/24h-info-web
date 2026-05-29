@@ -18,11 +18,12 @@ const total      = ref(0)
 const PAGE_SIZE = 12
 
 const filters = reactive({
-  search:    route.query.search    || '',
-  category:  route.query.category  || '',
-  city:      route.query.city      || '',
-  min_price: route.query.min_price || '',
-  max_price: route.query.max_price || '',
+  search:         route.query.search         || '',
+  category:       route.query.category       || '',
+  city:           route.query.city           || '',
+  min_price:      route.query.min_price      || '',
+  max_price:      route.query.max_price      || '',
+  favorites_only: route.query.favorites_only === '1',
 })
 
 const page = ref(Number(route.query.page) || 1)
@@ -47,7 +48,7 @@ function cardBg(listing) {
 
 function formatPrice(price) {
   if (price == null) return 'À négocier'
-  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function formatDate(dateStr) {
@@ -68,18 +69,23 @@ async function fetchListings() {
   loading.value = true
   error.value = ''
   try {
-    const params = {
-      offset: (page.value - 1) * PAGE_SIZE,
-      limit: PAGE_SIZE,
-    }
-    if (filters.search)    params.search    = filters.search
-    if (filters.category)  params.category  = filters.category
-    if (filters.city)      params.city      = filters.city
-    if (filters.min_price) params.min_price = filters.min_price
-    if (filters.max_price) params.max_price = filters.max_price
+    if (filters.favorites_only && auth.isAuthenticated) {
+      const { data } = await listingsApi.getFavorites()
+      listings.value = data
+    } else {
+      const params = {
+        offset: (page.value - 1) * PAGE_SIZE,
+        limit: PAGE_SIZE,
+      }
+      if (filters.search)    params.search    = filters.search
+      if (filters.category)  params.category  = filters.category
+      if (filters.city)      params.city      = filters.city
+      if (filters.min_price) params.min_price = filters.min_price
+      if (filters.max_price) params.max_price = filters.max_price
 
-    const { data } = await listingsApi.getListings(params)
-    listings.value = data
+      const { data } = await listingsApi.getListings(params)
+      listings.value = data
+    }
   } catch {
     error.value = 'Impossible de charger les annonces.'
   } finally {
@@ -102,22 +108,24 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  filters.search    = ''
-  filters.category  = ''
-  filters.city      = ''
-  filters.min_price = ''
-  filters.max_price = ''
+  filters.search         = ''
+  filters.category       = ''
+  filters.city           = ''
+  filters.min_price      = ''
+  filters.max_price      = ''
+  filters.favorites_only = false
   applyFilters()
 }
 
 function updateQuery() {
   const q = {}
-  if (filters.search)    q.search    = filters.search
-  if (filters.category)  q.category  = filters.category
-  if (filters.city)      q.city      = filters.city
-  if (filters.min_price) q.min_price = filters.min_price
-  if (filters.max_price) q.max_price = filters.max_price
-  if (page.value > 1)    q.page      = page.value
+  if (filters.search)         q.search         = filters.search
+  if (filters.category)       q.category       = filters.category
+  if (filters.city)           q.city           = filters.city
+  if (filters.min_price)      q.min_price      = filters.min_price
+  if (filters.max_price)      q.max_price      = filters.max_price
+  if (filters.favorites_only) q.favorites_only = '1'
+  if (page.value > 1)         q.page           = page.value
   router.replace({ query: q })
 }
 
@@ -129,7 +137,7 @@ function goToPage(n) {
 }
 
 const hasActiveFilter = computed(() =>
-  filters.search || filters.category || filters.city || filters.min_price || filters.max_price
+  filters.search || filters.category || filters.city || filters.min_price || filters.max_price || filters.favorites_only
 )
 
 onMounted(async () => {
@@ -202,6 +210,16 @@ onMounted(async () => {
           </div>
         </div>
 
+        <div v-if="auth.isAuthenticated" class="filter-group filter-group--fav">
+          <label class="filter-fav-toggle" :class="{ active: filters.favorites_only }">
+            <input type="checkbox" v-model="filters.favorites_only" class="fav-checkbox" />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            Mes favoris uniquement
+          </label>
+        </div>
+
         <button class="apply-btn" @click="applyFilters">Appliquer les filtres</button>
       </aside>
 
@@ -234,7 +252,6 @@ onMounted(async () => {
 
         <!-- Empty state -->
         <div v-else-if="listings.length === 0" class="empty-state">
-          <div class="empty-icon">🌿</div>
           <h2>Aucune annonce trouvée</h2>
           <p>Essayez de modifier vos filtres ou revenez plus tard.</p>
           <button v-if="hasActiveFilter" class="apply-btn" @click="resetFilters">Effacer les filtres</button>
@@ -253,9 +270,6 @@ onMounted(async () => {
                 ? { backgroundImage: `url(${listing.thumbnail})`, backgroundSize: 'cover', backgroundPosition: 'center' }
                 : { background: cardBg(listing) }"
             >
-              <span v-if="!listing.thumbnail" class="card-emoji">
-                {{ categories.find(c => c.slug === listing.category_slug)?.icon || '🌿' }}
-              </span>
               <span class="badge-new" v-if="(new Date() - new Date(listing.created_at)) < 86400000 * 2">Nouveau</span>
             </div>
 
@@ -464,8 +478,35 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
 }
-.filter-input.half { width: auto; flex: 1; }
+.filter-input.half { width: auto; flex: 1; min-width: 0; }
 .price-sep { color: var(--gray-400); font-size: 14px; }
+
+.filter-group--fav { margin-bottom: 16px; }
+
+.filter-fav-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-600);
+  transition: all 0.2s;
+  user-select: none;
+  width: 100%;
+}
+.filter-fav-toggle:hover { border-color: var(--forest-300); color: var(--forest-700); }
+.filter-fav-toggle.active {
+  border-color: var(--forest-500);
+  background: var(--forest-50);
+  color: var(--forest-700);
+}
+.filter-fav-toggle.active svg { fill: #ef4444; stroke: #ef4444; }
+.filter-fav-toggle svg { width: 16px; height: 16px; flex-shrink: 0; }
+.fav-checkbox { display: none; }
 
 .apply-btn {
   width: 100%;

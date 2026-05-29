@@ -1,18 +1,19 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const searchQuery = ref('')
+const router = useRouter()
+const searchQuery    = ref('')
 const searchLocation = ref('')
-const selectedCategory = ref('')
 
-const categories = ['Plantes d\'intérieur', 'Plantes fleuries', 'Graines & bulbes', 'Arbres & arbustes', 'Outils', 'Services', 'Cours']
-const quickTags = [
-  { label: 'Monstera', icon: '🌿' },
-  { label: 'Graines', icon: '🌱' },
-  { label: 'Outils', icon: '🔧' },
-  { label: 'Cours', icon: '📚' },
-  { label: 'Services', icon: '🤝' },
-]
+const quickTags = ['Monstera', 'Graines', 'Outils', 'Cours', 'Services']
+
+function search() {
+  const q = {}
+  if (searchQuery.value.trim())    q.search = searchQuery.value.trim()
+  if (searchLocation.value.trim()) q.city   = searchLocation.value.trim()
+  router.push({ path: '/annonces', query: q })
+}
 </script>
 
 <template>
@@ -88,7 +89,7 @@ const quickTags = [
           />
         </div>
 
-        <button class="search-btn">
+        <button class="search-btn" @click="search">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
@@ -99,9 +100,12 @@ const quickTags = [
       <!-- Quick tags -->
       <div class="quick-tags">
         <span class="tags-label">Tendance :</span>
-        <button v-for="tag in quickTags" :key="tag.label" class="tag-btn">
-          {{ tag.icon }} {{ tag.label }}
-        </button>
+        <RouterLink
+          v-for="tag in quickTags"
+          :key="tag"
+          :to="`/annonces?search=${tag}`"
+          class="tag-btn"
+        >{{ tag }}</RouterLink>
       </div>
     </div>
 

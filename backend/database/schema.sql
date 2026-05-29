@@ -26,15 +26,16 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 INSERT INTO categories (name, slug, icon) VALUES
-  ('Plantes d''intérieur', 'plantes-interieur', '🌿'),
-  ('Plantes fleuries',     'plantes-fleuries',  '🌸'),
-  ('Graines & Bulbes',     'graines-bulbes',    '🌱'),
-  ('Arbres & Arbustes',    'arbres-arbustes',   '🌳'),
-  ('Outils & Matériel',    'outils-materiel',   '🔧'),
-  ('Services & Conseils',  'services-conseils', '🤝'),
-  ('Cours & Ateliers',     'cours-ateliers',    '📚'),
-  ('Mobilier de jardin',   'mobilier-jardin',   '🪑')
-ON CONFLICT (slug) DO NOTHING;
+  ('Plantes d''intérieur', 'plantes-interieur', NULL),
+  ('Plantes fleuries',     'plantes-fleuries',  NULL),
+  ('Graines / Bulbes',     'graines-bulbes',    NULL),
+  ('Arbres / Arbustes',    'arbres-arbustes',   NULL),
+  ('Outils / Matériel',    'outils-materiel',   NULL),
+  ('Services / Conseils',  'services-conseils', NULL),
+  ('Cours / Ateliers',     'cours-ateliers',    NULL),
+  ('Mobilier de jardin',   'mobilier-jardin',   NULL),
+  ('Autres',               'autres',            NULL)
+ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, icon = EXCLUDED.icon;
 
 CREATE TABLE IF NOT EXISTS listings (
   id             SERIAL PRIMARY KEY,

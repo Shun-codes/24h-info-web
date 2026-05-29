@@ -87,7 +87,7 @@ const links = {
             <a href="#">CGU</a>
             <a href="#">Cookies</a>
           </div>
-          <span class="made-with">Fait avec 🌿 en France</span>
+          <span class="made-with">Fait en France</span>
         </div>
       </div>
     </div>

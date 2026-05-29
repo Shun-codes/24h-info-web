@@ -3,21 +3,23 @@ import { ListingModel } from '../listings/listing.model.js'
 
 export const sendMessage = async (req, res, next) => {
   try {
-    const { listing_id, content } = req.body
+    const { listing_id, content, receiver_id } = req.body
     if (!listing_id || !content?.trim()) {
       return res.status(400).json({ message: 'Annonce et message requis' })
     }
 
     const listing = await ListingModel.findById(listing_id)
     if (!listing) return res.status(404).json({ message: 'Annonce introuvable' })
-    if (listing.user_id === req.user.id) {
+
+    const targetReceiverId = receiver_id || listing.user_id
+    if (targetReceiverId === req.user.id) {
       return res.status(400).json({ message: 'Vous ne pouvez pas vous écrire à vous-même' })
     }
 
     const message = await MessageModel.send({
       listing_id,
       sender_id: req.user.id,
-      receiver_id: listing.user_id,
+      receiver_id: targetReceiverId,
       content: content.trim(),
     })
 
@@ -49,6 +51,15 @@ export const markRead = async (req, res, next) => {
   try {
     await MessageModel.markRead(req.params.id, req.user.id)
     res.status(204).end()
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const getUnreadCount = async (req, res, next) => {
+  try {
+    const count = await MessageModel.countUnread(req.user.id)
+    res.json({ count })
   } catch (err) {
     next(err)
   }

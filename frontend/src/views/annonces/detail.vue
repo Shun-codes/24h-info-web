@@ -31,7 +31,7 @@ const deleting = ref(false)
 
 function formatPrice(price) {
   if (price == null) return 'À négocier'
-  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
+  return Number(price).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 })
 }
 
 function formatDate(d) {
@@ -130,7 +130,7 @@ onMounted(async () => {
 
     <div class="container" v-else-if="error">
       <div class="not-found">
-        <div class="nf-icon">🌿</div>
+        <div class="nf-icon"></div>
         <h1>Annonce introuvable</h1>
         <p>Cette annonce n'existe plus ou a été supprimée.</p>
         <RouterLink to="/annonces" class="btn-back">Retour aux annonces</RouterLink>
@@ -161,9 +161,7 @@ onMounted(async () => {
               </div>
               <div v-if="images.length > 1" class="gallery-count">{{ imgIndex + 1 }} / {{ images.length }}</div>
             </div>
-            <div v-else class="gallery-placeholder">
-              <span class="placeholder-emoji">🌿</span>
-            </div>
+            <div v-else class="gallery-placeholder"></div>
 
             <!-- Thumbnails -->
             <div v-if="images.length > 1" class="gallery-thumbs">
@@ -189,13 +187,13 @@ onMounted(async () => {
             <h2 class="section-title-sm">Gérer cette annonce</h2>
             <div class="owner-btns">
               <RouterLink :to="`/mes-annonces`" class="btn-edit">
-                ✏️ Modifier
+                Modifier
               </RouterLink>
               <button class="btn-hide" @click="toggleHide">
-                {{ listing.is_hidden ? '👁️ Rendre visible' : '🙈 Masquer' }}
+                {{ listing.is_hidden ? 'Rendre visible' : 'Masquer' }}
               </button>
               <button class="btn-delete" :disabled="deleting" @click="deleteListing">
-                {{ deleting ? 'Suppression…' : '🗑️ Supprimer' }}
+                {{ deleting ? 'Suppression…' : 'Supprimer' }}
               </button>
             </div>
           </div>
@@ -226,7 +224,7 @@ onMounted(async () => {
           <!-- Price + Status -->
           <div class="sidebar-card price-card">
             <div class="listing-status" v-if="listing.is_hidden">
-              <span class="badge-hidden">🙈 Masquée</span>
+              <span class="badge-hidden">Masquée</span>
             </div>
             <div class="price-display">{{ formatPrice(listing.price) }}</div>
             <div class="listing-meta-row">
@@ -301,7 +299,7 @@ onMounted(async () => {
                     </div>
                   </div>
                   <div v-if="msgSent" class="msg-success">
-                    ✅ Message envoyé ! Le vendeur vous répondra directement.
+                    Message envoyé. Le vendeur vous répondra directement.
                   </div>
                 </template>
                 <RouterLink v-else :to="{ name: 'login', query: { redirect: route.fullPath } }" class="btn-contact">

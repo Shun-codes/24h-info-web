@@ -1,15 +1,35 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { getUnreadCount } from '@/api/messages.js'
 
-const scrolled = ref(true)
-const menuOpen = ref(false)
-const auth = useAuthStore()
-const router = useRouter()
+const scrolled    = ref(true)
+const menuOpen    = ref(false)
+const unreadCount = ref(0)
+const auth        = useAuthStore()
+const router      = useRouter()
+
+let pollInterval = null
+
+async function fetchUnread() {
+  if (!auth.isAuthenticated) return
+  try {
+    const { data } = await getUnreadCount()
+    unreadCount.value = data.count
+  } catch {}
+}
+
+onMounted(() => {
+  fetchUnread()
+  pollInterval = setInterval(fetchUnread, 30_000)
+})
+
+onUnmounted(() => clearInterval(pollInterval))
 
 const logout = () => {
   auth.logout()
+  unreadCount.value = 0
   menuOpen.value = false
   router.push({ name: 'home' })
 }
@@ -30,13 +50,15 @@ const logout = () => {
       </a>
 
       <nav class="nav-links">
-        <a href="#annonces">Annonces</a>
-        <a href="#categories">Catégories</a>
-        <a href="#services">Services</a>
-        <a href="#comment-ca-marche">Comment ça marche</a>
+        <RouterLink to="/annonces">Annonces</RouterLink>
       </nav>
 
       <div class="nav-actions">
+        <RouterLink v-if="auth.isAuthenticated" to="/messages" class="msg-btn" title="Messages">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span v-if="unreadCount > 0" class="msg-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        </RouterLink>
+        <RouterLink v-if="auth.isAuthenticated" to="/mes-annonces" class="btn-ghost">Mes annonces</RouterLink>
         <a v-if="auth.isAuthenticated" href="/profil" class="btn-ghost">Mon profil</a>
         <button v-if="auth.isAuthenticated" class="btn-ghost logout-btn" @click="logout">Se déconnecter</button>
         <a v-else href="/connexion" class="btn-ghost">Se connecter</a>
@@ -56,10 +78,12 @@ const logout = () => {
     </div>
 
     <div :class="['mobile-drawer', { open: menuOpen }]">
-      <a href="#annonces" @click="menuOpen=false">Annonces</a>
-      <a href="#categories" @click="menuOpen=false">Catégories</a>
-      <a href="#services" @click="menuOpen=false">Services</a>
-      <a href="#comment-ca-marche" @click="menuOpen=false">Comment ça marche</a>
+      <RouterLink to="/annonces" @click="menuOpen=false">Annonces</RouterLink>
+      <RouterLink v-if="auth.isAuthenticated" to="/mes-annonces" @click="menuOpen=false">Mes annonces</RouterLink>
+      <RouterLink v-if="auth.isAuthenticated" to="/messages" @click="menuOpen=false" class="mobile-messages">
+        Messages
+        <span v-if="unreadCount > 0" class="mobile-badge">{{ unreadCount }}</span>
+      </RouterLink>
       <div class="mobile-divider"></div>
       <a v-if="auth.isAuthenticated" href="/profil" class="mobile-login" @click="menuOpen=false">Mon profil</a>
       <button v-if="auth.isAuthenticated" class="mobile-login logout-btn" @click="logout">Se déconnecter</button>
@@ -161,6 +185,54 @@ const logout = () => {
   background: none;
   border: none;
   font-family: inherit;
+}
+
+.msg-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.85);
+  transition: all 0.2s;
+}
+
+.msg-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+.scrolled .msg-btn { color: var(--gray-600); }
+.scrolled .msg-btn:hover { background: var(--forest-50); color: var(--forest-700); }
+
+.msg-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 17px;
+  height: 17px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.mobile-messages {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 6px;
 }
 
 .btn-cta {

@@ -6,7 +6,7 @@ const router = useRouter()
 <template>
   <main class="not-found">
     <div class="not-found-inner">
-      <span class="not-found-emoji">🌱</span>
+      <svg class="not-found-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
       <h1>Page introuvable</h1>
       <p>Cette page n'existe pas ou a été déplacée.</p>
       <button @click="router.push('/')">Retour à l'accueil</button>
@@ -23,7 +23,7 @@ const router = useRouter()
   text-align: center;
 }
 .not-found-inner { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.not-found-emoji { font-size: 64px; }
+.not-found-icon { width: 64px; height: 64px; color: var(--forest-400); }
 h1 { font-family: var(--font-heading); font-size: 32px; color: var(--forest-800); }
 p  { color: var(--gray-500); }
 button {

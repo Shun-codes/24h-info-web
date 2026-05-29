@@ -14,9 +14,6 @@ frontend/.vite/
 backend/.env
 *.local
 
-# Uploads utilisateurs
-backend/uploads/
-
 # Logs
 logs/
 *.log
