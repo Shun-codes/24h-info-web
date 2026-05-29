@@ -4,12 +4,16 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import morgan from 'morgan'
 import { config } from 'dotenv'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import routes from './routes/index.js'
 import { errorHandler, notFound } from './middleware/error.middleware.js'
 
 config()
 
 const app = express()
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const uploadsDir = path.resolve(__dirname, '../public/uploads')
 
 app.use(helmet())
 app.use(cors({
@@ -34,7 +38,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 
 app.use('/api', routes)
-app.use('/uploads', express.static('uploads'))
+app.use('/uploads', express.static(uploadsDir))
 
 app.use(notFound)
 app.use(errorHandler)
