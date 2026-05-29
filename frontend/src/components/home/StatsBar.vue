@@ -1,5 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const sectionRef = ref(null)
+const sy         = useScrollParallax()
+const spL        = parallaxStyle(sectionRef, sy, 0.10)
+const spR        = parallaxStyle(sectionRef, sy, 0.07)
 
 const stats = [
   { value: 1200, suffix: '+', label: 'Annonces actives',    detail: 'mises à jour chaque jour' },
@@ -10,7 +16,6 @@ const stats = [
 
 const counts  = ref(stats.map(() => 0))
 const started = ref(false)
-const sectionRef = ref(null)
 
 function runCounters() {
   if (started.value) return
@@ -39,10 +44,9 @@ onMounted(() => {
 
 <template>
   <section class="stats-section" ref="sectionRef">
-    <!-- Background plant decorations -->
     <div class="stat-plants" aria-hidden="true">
-      <img src="/Plant - Outline - 06.png" class="sp sp-l" />
-      <img src="/Plant - Outline - 09.png" class="sp sp-r" />
+      <img src="/Plant - Flat - 06.png"              class="sp sp-l" :style="spL" />
+      <img src="/Plant - Gradient - Outline - 09.png" class="sp sp-r" :style="spR" />
     </div>
 
     <div class="container stats-inner">
@@ -69,9 +73,9 @@ onMounted(() => {
 .stat-plants {
   position: absolute; inset: 0; pointer-events: none; z-index: 0;
 }
-.sp { position: absolute; height: 140%; width: auto; opacity: 0.06; top: -20%; }
-.sp-l { left: -2%; transform: rotate(-15deg); }
-.sp-r { right: -2%; transform: rotate(15deg) scaleX(-1); }
+.sp { position: absolute; height: 140%; width: auto; opacity: 0.14; top: -20%; will-change: transform; pointer-events: none; user-select: none; }
+.sp-l { left: -2%; transform-origin: bottom left; rotate: -15deg; }
+.sp-r { right: -2%; scale: -1 1; rotate: -15deg; }
 
 .stats-inner {
   position: relative; z-index: 1;

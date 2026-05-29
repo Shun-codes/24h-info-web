@@ -1,5 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const sectionRef = ref(null)
+const sy  = useScrollParallax()
+const hp1 = parallaxStyle(sectionRef, sy, 0.13)
+const hp2 = parallaxStyle(sectionRef, sy, 0.08)
 
 const steps = [
   {
@@ -32,7 +38,6 @@ const steps = [
 ]
 
 const visible = ref(false)
-const sectionRef = ref(null)
 
 onMounted(() => {
   const obs = new IntersectionObserver(
@@ -45,10 +50,9 @@ onMounted(() => {
 
 <template>
   <section class="how-section" id="comment-ca-marche" ref="sectionRef">
-    <!-- Decorative background plants -->
     <div class="how-bg-deco" aria-hidden="true">
-      <img src="/Plant - Gradient - Outline - 02.png" class="hbd-1" />
-      <img src="/Plant - Gradient - Outline - 08.png" class="hbd-2" />
+      <img src="/Plant - Flat - 01.png"              class="hbd-1" :style="hp1" />
+      <img src="/Plant - Gradient - Outline - 08.png" class="hbd-2" :style="hp2" />
     </div>
 
     <!-- Top wave -->
@@ -128,8 +132,8 @@ onMounted(() => {
 .how-bg-deco {
   position: absolute; inset: 0; pointer-events: none; z-index: 0;
 }
-.hbd-1 { position: absolute; left: -80px; top: 50%; transform: translateY(-50%); width: 280px; opacity: 0.06; }
-.hbd-2 { position: absolute; right: -80px; top: 50%; transform: translateY(-50%) scaleX(-1); width: 320px; opacity: 0.05; }
+.hbd-1 { position: absolute; left: -60px; top: 15%; width: 300px; opacity: 0.13; rotate: -15deg; will-change: transform; pointer-events: none; }
+.hbd-2 { position: absolute; right: -60px; bottom: 10%; width: 340px; opacity: 0.10; scale: -1 1; rotate: -10deg; will-change: transform; pointer-events: none; }
 
 .how-wave-top {
   position: absolute; top: -2px; left: 0; right: 0;
