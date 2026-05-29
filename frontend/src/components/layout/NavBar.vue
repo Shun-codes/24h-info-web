@@ -3,14 +3,13 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { getUnreadCount } from '@/api/messages.js'
+import { connectSocket, getSocket, disconnectSocket } from '@/api/socket.js'
 
 const scrolled    = ref(true)
 const menuOpen    = ref(false)
 const unreadCount = ref(0)
 const auth        = useAuthStore()
 const router      = useRouter()
-
-let pollInterval = null
 
 async function fetchUnread() {
   if (!auth.isAuthenticated) return
@@ -21,16 +20,26 @@ async function fetchUnread() {
 }
 
 onMounted(() => {
+  if (!auth.isAuthenticated) return
   fetchUnread()
-  pollInterval = setInterval(fetchUnread, 30_000)
+
+  const socket = connectSocket(auth.token)
+  socket.on('new_message', (msg) => {
+    if (msg.sender_id !== auth.user?.id) {
+      unreadCount.value++
+    }
+  })
 })
 
-onUnmounted(() => clearInterval(pollInterval))
+onUnmounted(() => {
+  getSocket()?.off('new_message')
+})
 
 const logout = () => {
   auth.logout()
   unreadCount.value = 0
   menuOpen.value = false
+  disconnectSocket()
   router.push({ name: 'home' })
 }
 </script>

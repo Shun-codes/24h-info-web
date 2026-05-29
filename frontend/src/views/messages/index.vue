@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import * as messagesApi from '@/api/messages.js'
+import { connectSocket, disconnectSocket } from '@/api/socket.js'
 
 const auth          = useAuthStore()
 const conversations = ref([])
@@ -14,7 +15,30 @@ const sending       = ref(false)
 const threadEl      = ref(null)
 const mobileView    = ref('list')
 
-onMounted(fetchConversations)
+onMounted(() => {
+  fetchConversations()
+
+  const socket = connectSocket(auth.token)
+
+  socket.on('new_message', (msg) => {
+    // Ignorer les messages envoyés par soi-même (déjà ajoutés via send())
+    if (msg.sender_id === auth.user.id) return
+
+    // Mettre à jour le thread si la conversation est ouverte
+    if (selected.value?.listing_id === msg.listing_id) {
+      thread.value.push(msg)
+      scrollToBottom()
+      messagesApi.markRead(msg.id)
+    }
+
+    // Rafraîchir la liste des conversations (aperçu + non-lus)
+    fetchConversations()
+  })
+})
+
+onUnmounted(() => {
+  disconnectSocket()
+})
 
 async function fetchConversations() {
   loadingConvs.value = true

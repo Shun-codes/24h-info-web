@@ -23,6 +23,10 @@ export const sendMessage = async (req, res, next) => {
       content: content.trim(),
     })
 
+    const io = req.app.get('io')
+    io.to(`user:${targetReceiverId}`).emit('new_message', message)
+    io.to(`user:${req.user.id}`).emit('new_message', message)
+
     res.status(201).json(message)
   } catch (err) {
     next(err)
