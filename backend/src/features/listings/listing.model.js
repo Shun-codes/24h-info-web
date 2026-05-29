@@ -1,4 +1,4 @@
-import db from '../config/database.js'
+import db from '../../config/database.js'
 
 export const ListingModel = {
   async findAll({ search, category, city, min_price, max_price, limit = 20, offset = 0 }) {

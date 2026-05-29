@@ -1,7 +1,7 @@
 import { Router } from 'express'
-import * as ctrl from '../controllers/listing.controller.js'
-import { requireAuth, optionalAuth } from '../middleware/auth.middleware.js'
-import { upload } from '../middleware/upload.middleware.js'
+import * as ctrl from './listing.controller.js'
+import { requireAuth, optionalAuth } from '../../middleware/auth.middleware.js'
+import { upload } from '../../middleware/upload.middleware.js'
 
 const router = Router()
 
