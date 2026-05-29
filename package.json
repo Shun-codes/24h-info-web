@@ -1,10 +1,23 @@
 {
   "name": "lunivert",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "concurrently -n \"front,back\" -c \"cyan,green\" \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "start-dev": "docker compose up -d",
+    "stop-dev": "docker compose down",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
     "install:all": "npm install --prefix frontend && npm install --prefix backend",
-    "build": "npm run build --prefix frontend"
+    "install": "npm run install:all && npm run env:copy",
+    "env:copy": "cp -n .env.example .env && cp -n backend/.env.example backend/.env",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix backend",
+    "docker:up": "docker compose up --build",
+    "docker:up:detached": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:restart": "docker compose down && docker compose up --build -d"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
