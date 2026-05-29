@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n \"front,back\" -c \"cyan,green\" \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
-    "start-dev": "docker compose up -d",
+    "start-dev": "docker compose up",
     "stop-dev": "docker compose down",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend",
@@ -17,7 +17,8 @@
     "docker:up:detached": "docker compose up --build -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
-    "docker:restart": "docker compose down && docker compose up --build -d"
+    "docker:restart": "docker compose down && docker compose up --build -d",
+    "db:seed": "npm run db:seed --prefix backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

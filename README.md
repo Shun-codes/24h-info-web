@@ -36,6 +36,12 @@ Cette commande lance automatiquement les trois services via Docker :
 
 > La base de données est initialisée automatiquement au premier démarrage.
 
+### 3. Injecter les comptes de test
+
+```bash
+npm run db:seed
+```
+
 ### 3. Arrêter l'application
 
 ```bash
@@ -61,8 +67,10 @@ docker compose down -v
 
 ## Comptes de test
 
+> Créés automatiquement via `npm run db:seed` (à lancer une fois après le démarrage).
+
 | Rôle | Email | Mot de passe |
 |---|---|---|
-| Utilisateur | — | — |
-| Modérateur | — | — |
-| Administrateur | — | — |
+| Utilisateur | user@lunivert.fr | User1234 |
+| Modérateur | modo@lunivert.fr | Modo1234 |
+| Administrateur | admin@lunivert.fr | Admin1234 |
