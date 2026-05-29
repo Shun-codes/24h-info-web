@@ -1,90 +1,120 @@
 <script setup>
-const items = [
-  {
-    label: 'Annonces actives',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>`,
-  },
-  {
-    label: 'Jardiniers inscrits',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  },
-  {
-    label: 'Catégories disponibles',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
-  },
-  {
-    label: 'Échanges réalisés',
-    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
-  },
+import { ref, onMounted } from 'vue'
+
+const stats = [
+  { value: 1200, suffix: '+', label: 'Annonces actives',    detail: 'mises à jour chaque jour' },
+  { value: 4000, suffix: '+', label: 'Jardiniers inscrits', detail: 'partout en France' },
+  { value: 12,   suffix: '',  label: 'Catégories',          detail: 'plantes, outils, services…' },
+  { value: 98,   suffix: '%', label: 'Échanges réussis',    detail: 'satisfaction garantie' },
 ]
+
+const counts  = ref(stats.map(() => 0))
+const started = ref(false)
+const sectionRef = ref(null)
+
+function runCounters() {
+  if (started.value) return
+  started.value = true
+  stats.forEach((stat, i) => {
+    const duration = 1600 + i * 120
+    const start = performance.now()
+    function frame(now) {
+      const p = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - p, 3)
+      counts.value[i] = Math.round(stat.value * eased)
+      if (p < 1) requestAnimationFrame(frame)
+    }
+    setTimeout(() => requestAnimationFrame(frame), i * 80)
+  })
+}
+
+onMounted(() => {
+  const obs = new IntersectionObserver(
+    e => { if (e[0].isIntersecting) runCounters() },
+    { threshold: 0.25 }
+  )
+  if (sectionRef.value) obs.observe(sectionRef.value)
+})
 </script>
 
 <template>
-  <section class="stats-bar">
-    <div class="stats-inner container">
-      <div v-for="(item, i) in items" :key="i" class="stat-item">
-        <span class="stat-icon" v-html="item.icon"></span>
-        <span class="stat-label">{{ item.label }}</span>
+  <section class="stats-section" ref="sectionRef">
+    <!-- Background plant decorations -->
+    <div class="stat-plants" aria-hidden="true">
+      <img src="/Plant - Outline - 06.png" class="sp sp-l" />
+      <img src="/Plant - Outline - 09.png" class="sp sp-r" />
+    </div>
+
+    <div class="container stats-inner">
+      <div v-for="(stat, i) in stats" :key="i" class="stat-item">
+        <div class="stat-num">
+          {{ counts[i].toLocaleString('fr-FR') }}<span class="stat-suf">{{ stat.suffix }}</span>
+        </div>
+        <div class="stat-label">{{ stat.label }}</div>
+        <div class="stat-detail">{{ stat.detail }}</div>
       </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-.stats-bar {
-  background: var(--forest-800);
-  padding: 0;
+.stats-section {
+  background: #f7faf4;
+  padding: 72px 0 64px;
+  border-bottom: 1px solid #ddeedd;
+  position: relative;
+  overflow: hidden;
 }
 
+.stat-plants {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+}
+.sp { position: absolute; height: 140%; width: auto; opacity: 0.06; top: -20%; }
+.sp-l { left: -2%; transform: rotate(-15deg); }
+.sp-r { right: -2%; transform: rotate(15deg) scaleX(-1); }
+
 .stats-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
+  position: relative; z-index: 1;
+  display: flex; align-items: stretch; justify-content: space-between; gap: 0;
 }
 
 .stat-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 24px 40px;
-  position: relative;
-  flex: 1;
-  justify-content: center;
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; padding: 0 28px; position: relative;
+  text-align: center;
 }
-
 .stat-item:not(:last-child)::after {
   content: '';
-  position: absolute;
-  right: 0; top: 25%; bottom: 25%;
-  width: 1px;
-  background: rgba(255,255,255,0.1);
+  position: absolute; right: 0; top: 10%; bottom: 10%;
+  width: 1px; background: #cce4cf;
 }
 
-.stat-icon {
-  width: 24px; height: 24px;
-  flex-shrink: 0;
-  color: var(--forest-300);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.stat-num {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(40px, 5.5vw, 70px);
+  font-weight: 700; letter-spacing: -2px; line-height: 1;
+  color: #0f2b1b;
 }
-.stat-icon :deep(svg) { width: 24px; height: 24px; color: var(--forest-300); }
+.stat-suf {
+  font-size: 0.5em; color: #40916c;
+  letter-spacing: 0; font-weight: 700;
+  vertical-align: super; margin-left: 2px;
+}
 
 .stat-label {
-  font-size: 14px;
-  color: rgba(255,255,255,0.65);
-  font-weight: 500;
-  white-space: nowrap;
+  font-size: 14px; font-weight: 600; color: #2d6a4f; letter-spacing: 0.3px;
 }
 
-@media (max-width: 768px) {
+.stat-detail {
+  font-size: 12px; color: #9ca3af; font-weight: 400;
+}
+
+@media (max-width: 720px) {
   .stats-inner { flex-wrap: wrap; }
-  .stat-item { flex: 1 1 50%; padding: 18px 20px; }
+  .stat-item { flex: 1 1 50%; padding: 20px 12px; }
   .stat-item:nth-child(2)::after { display: none; }
   .stat-item:nth-child(3)::after { display: none; }
 }
-
 @media (max-width: 400px) {
   .stat-item { flex: 1 1 100%; }
   .stat-item::after { display: none !important; }
