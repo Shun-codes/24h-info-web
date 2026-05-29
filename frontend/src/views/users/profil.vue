@@ -322,7 +322,7 @@ async function onDeleteAccount() {
 
 .profile-form {
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 label span {
@@ -340,10 +340,94 @@ input[type='file'] {
   width: 100%;
 }
 
+input[type='text'],
+input[type='email'],
+input[type='tel'] {
+  appearance: none;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #fbfdf9);
+  color: var(--forest-900);
+  padding: 14px 16px;
+  min-height: 52px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 1px 2px rgba(8,28,21,0.03);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+input[type='text']::placeholder,
+input[type='email']::placeholder,
+input[type='tel']::placeholder {
+  color: var(--gray-400);
+}
+
+input[type='text']:hover,
+input[type='email']:hover,
+input[type='tel']:hover {
+  border-color: var(--forest-200);
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='tel']:focus,
+input[type='file']:focus {
+  outline: none;
+}
+
+input[type='text']:focus-visible,
+input[type='email']:focus-visible,
+input[type='tel']:focus-visible,
+input[type='file']:focus-visible {
+  border-color: var(--forest-500);
+  box-shadow: 0 0 0 4px rgba(82,183,136,0.14), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='tel']:focus {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+input[type='file'] {
+  padding: 12px 14px;
+  border: 1px dashed rgba(82,183,136,0.28);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(240,253,244,0.78), rgba(255,255,255,0.96));
+  color: var(--gray-600);
+}
+
+input[type='file']::file-selector-button {
+  border: none;
+  margin-right: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--forest-500), var(--forest-600));
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+input[type='file']::file-selector-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(27,67,50,0.14);
+}
+
 .field-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+label:focus-within span {
+  color: var(--forest-700);
+}
+
+label:focus-within input[type='text'],
+label:focus-within input[type='email'],
+label:focus-within input[type='tel'],
+label:focus-within input[type='file'] {
+  border-color: var(--forest-400);
 }
 
 .form-feedback {
