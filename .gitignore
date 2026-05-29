@@ -37,3 +37,11 @@ Thumbs.db
 
 # Upload
 backend/public/uploads
+
+# Couverture de tests
+coverage/
+backend/coverage/
+frontend/coverage/
+
+# Fichiers générés
+*.pdf
