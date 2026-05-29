@@ -1,7 +1,10 @@
 {
+  "installCommand": "npm install --prefix frontend",
   "buildCommand": "npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/:path*",     "destination": "https://iut-de-lens.24h.umontp.fr/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://iut-de-lens.24h.umontp.fr/uploads/:path*" },
+    { "source": "/(.*)",           "destination": "/index.html" }
   ]
 }
