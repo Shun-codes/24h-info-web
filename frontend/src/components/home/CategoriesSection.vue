@@ -1,6 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getCategories } from '@/api/categories.js'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const sectionRef = ref(null)
+const sy  = useScrollParallax()
+const cdL = parallaxStyle(sectionRef, sy, 0.14)
+const cdR = parallaxStyle(sectionRef, sy, 0.09)
 
 const categories = ref([])
 
@@ -46,11 +52,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="cat-section" id="categories">
-    <!-- Background plant decoration -->
+  <section class="cat-section" id="categories" ref="sectionRef">
     <div class="cat-bg-deco" aria-hidden="true">
-      <img src="/Plant - Gradient - Outline - 04.png" class="cat-deco-plant cdp-l" />
-      <img src="/Plant - Gradient - Outline - 08.png" class="cat-deco-plant cdp-r" />
+      <img src="/Plant - Flat - 04.png"              class="cat-deco-plant cdp-l" :style="cdL" />
+      <img src="/Plant - Gradient - Outline - 08.png" class="cat-deco-plant cdp-r" :style="cdR" />
     </div>
 
     <div class="container">
@@ -112,9 +117,9 @@ onMounted(async () => {
 .cat-bg-deco {
   position: absolute; inset: 0; pointer-events: none; z-index: 0;
 }
-.cat-deco-plant { position: absolute; width: 320px; height: auto; opacity: 0.07; }
-.cdp-l { bottom: -40px; left: -60px; transform: rotate(-20deg); }
-.cdp-r { top: -40px; right: -60px; transform: rotate(15deg) scaleX(-1); }
+.cat-deco-plant { position: absolute; width: 360px; height: auto; opacity: 0.12; will-change: transform; pointer-events: none; user-select: none; }
+.cdp-l { bottom: -40px; left: -60px; rotate: -20deg; }
+.cdp-r { top: -40px; right: -60px; scale: -1 1; rotate: -15deg; }
 
 .container { position: relative; z-index: 1; }
 

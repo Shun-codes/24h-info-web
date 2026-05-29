@@ -1,15 +1,21 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { getUnreadCount } from '@/api/messages.js'
 import { connectSocket, getSocket, disconnectSocket } from '@/api/socket.js'
 
-const scrolled    = ref(true)
-const menuOpen    = ref(false)
-const unreadCount = ref(0)
-const auth        = useAuthStore()
-const router      = useRouter()
+const scrolled     = ref(true)
+const menuOpen     = ref(false)
+const userMenuOpen = ref(false)
+const unreadCount  = ref(0)
+const auth         = useAuthStore()
+const router       = useRouter()
+
+const userInitial = computed(() => {
+  const n = auth.user?.name || auth.user?.username || auth.user?.email || 'U'
+  return n.trim()[0].toUpperCase()
+})
 
 async function fetchUnread() {
   if (!auth.isAuthenticated) return
@@ -19,9 +25,14 @@ async function fetchUnread() {
   } catch {}
 }
 
+function closeUserMenu(e) {
+  if (!e.target.closest('.user-zone')) userMenuOpen.value = false
+}
+
 onMounted(() => {
   if (!auth.isAuthenticated) return
   fetchUnread()
+  document.addEventListener('click', closeUserMenu)
 
   const socket = connectSocket(auth.token)
   socket.on('new_message', (msg) => {
@@ -33,12 +44,14 @@ onMounted(() => {
 
 onUnmounted(() => {
   getSocket()?.off('new_message')
+  document.removeEventListener('click', closeUserMenu)
 })
 
 const logout = () => {
   auth.logout()
-  unreadCount.value = 0
-  menuOpen.value = false
+  unreadCount.value  = 0
+  menuOpen.value     = false
+  userMenuOpen.value = false
   disconnectSocket()
   router.push({ name: 'home' })
 }
@@ -47,35 +60,72 @@ const logout = () => {
 <template>
   <header :class="['navbar', { scrolled, 'menu-open': menuOpen }]">
     <div class="nav-inner container">
+
       <a href="/" class="logo">
-        <svg class="logo-icon" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18 3C18 3 6 10 6 21C6 27.6 11.4 33 18 33C24.6 33 30 27.6 30 21C30 10 18 3 18 3Z" fill="#52b788"/>
-          <path d="M18 3C18 3 30 10 30 21" stroke="#1b4332" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M18 33V17" stroke="#1b4332" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M18 20C18 20 14 17 11 18" stroke="#1b4332" stroke-width="1.4" stroke-linecap="round"/>
-          <path d="M18 24C18 24 22 21 25 22" stroke="#1b4332" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-        <span class="logo-text">L'Uni <em>Vert</em></span>
+        <img src="/uniVert.png" class="logo-img" alt="L'Uni Vert" />
       </a>
 
       <nav class="nav-links">
-        <RouterLink to="/annonces">Annonces</RouterLink>
+        <RouterLink to="/annonces"          class="nl">Annonces</RouterLink>
+        <RouterLink to="/comment-ca-marche" class="nl">Comment ça marche</RouterLink>
       </nav>
 
       <div class="nav-actions">
-        <RouterLink v-if="auth.isAuthenticated" to="/messages" class="msg-btn" title="Messages">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <span v-if="unreadCount > 0" class="msg-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+
+        <RouterLink v-if="auth.isAuthenticated" to="/messages" class="icon-btn" title="Messages">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span v-if="unreadCount > 0" class="icon-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
         </RouterLink>
-        <RouterLink v-if="auth.isAuthenticated" to="/mes-annonces" class="btn-ghost">Mes annonces</RouterLink>
-        <a v-if="auth.isAuthenticated" href="/profil" class="btn-ghost">Mon profil</a>
-        <button v-if="auth.isAuthenticated" class="btn-ghost logout-btn" @click="logout">Se déconnecter</button>
+
+        <div v-if="auth.isAuthenticated" class="user-zone" @click.stop="userMenuOpen = !userMenuOpen">
+          <button class="user-chip">
+            <span class="user-av">{{ userInitial }}</span>
+            <span class="user-name">Mon compte</span>
+            <svg class="user-caret" :class="{ open: userMenuOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+
+          <div class="user-dropdown" :class="{ open: userMenuOpen }" @click.stop>
+            <a href="/profil" class="dd-item" @click="userMenuOpen=false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              Mon profil
+            </a>
+            <RouterLink to="/mes-annonces" class="dd-item" @click="userMenuOpen=false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
+              </svg>
+              Mes annonces
+            </RouterLink>
+            <RouterLink to="/favoris" class="dd-item" @click="userMenuOpen=false">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              Mes favoris
+            </RouterLink>
+            <div class="dd-sep"></div>
+            <button class="dd-item dd-logout" @click="logout">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Se déconnecter
+            </button>
+          </div>
+        </div>
+
         <a v-else href="/connexion" class="btn-ghost">Se connecter</a>
+
+        <div class="vsep"></div>
+
         <a href="/deposer" class="btn-cta">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
             <path d="M12 5v14M5 12h14"/>
           </svg>
-          Déposer une annonce
+          Déposer
         </a>
       </div>
 
@@ -87,244 +137,123 @@ const logout = () => {
     </div>
 
     <div :class="['mobile-drawer', { open: menuOpen }]">
-      <RouterLink to="/annonces" @click="menuOpen=false">Annonces</RouterLink>
-      <RouterLink v-if="auth.isAuthenticated" to="/mes-annonces" @click="menuOpen=false">Mes annonces</RouterLink>
-      <RouterLink v-if="auth.isAuthenticated" to="/messages" @click="menuOpen=false" class="mobile-messages">
-        Messages
-        <span v-if="unreadCount > 0" class="mobile-badge">{{ unreadCount }}</span>
-      </RouterLink>
-      <div class="mobile-divider"></div>
-      <a v-if="auth.isAuthenticated" href="/profil" class="mobile-login" @click="menuOpen=false">Mon profil</a>
-      <button v-if="auth.isAuthenticated" class="mobile-login logout-btn" @click="logout">Se déconnecter</button>
-      <a v-else href="/connexion" class="mobile-login">Se connecter</a>
-      <a href="/deposer" class="mobile-cta">Déposer une annonce</a>
+      <RouterLink to="/annonces"          @click="menuOpen=false" class="ml">Annonces</RouterLink>
+      <RouterLink to="/comment-ca-marche" @click="menuOpen=false" class="ml">Comment ça marche</RouterLink>
+
+      <template v-if="auth.isAuthenticated">
+        <RouterLink to="/messages" @click="menuOpen=false" class="ml ml-msg">
+          Messages
+          <span v-if="unreadCount > 0" class="ml-badge">{{ unreadCount }}</span>
+        </RouterLink>
+        <RouterLink to="/mes-annonces" @click="menuOpen=false" class="ml">Mes annonces</RouterLink>
+        <RouterLink to="/favoris"      @click="menuOpen=false" class="ml">Mes favoris</RouterLink>
+        <div class="md-sep"></div>
+        <a href="/profil" @click="menuOpen=false" class="ml">Mon profil</a>
+        <button class="ml ml-logout" @click="logout">Se déconnecter</button>
+      </template>
+      <template v-else>
+        <div class="md-sep"></div>
+        <a href="/connexion" @click="menuOpen=false" class="ml">Se connecter</a>
+      </template>
+
+      <a href="/deposer" @click="menuOpen=false" class="ml-cta">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Déposer une annonce
+      </a>
     </div>
   </header>
 </template>
 
 <style scoped>
 .navbar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 1000;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   transition: background 0.35s var(--ease), box-shadow 0.35s var(--ease);
 }
-
 .navbar.scrolled {
-  background: rgba(255,255,255,0.96);
+  background: rgba(255,255,255,0.97);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
 }
 
-.nav-inner {
-  height: 72px;
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
+.nav-inner { height: 68px; display: flex; align-items: center; gap: 0; }
 
-/* Logo */
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  margin-right: 48px;
-}
+.logo { display: flex; align-items: center; gap: 9px; flex-shrink: 0; margin-right: 40px; text-decoration: none; }
+.logo-img { height: 38px; width: auto; display: block; transition: transform 0.3s var(--ease); object-fit: contain; }
+.logo:hover .logo-img { transform: scale(1.04); }
 
-.logo-icon { width: 34px; height: 34px; transition: transform 0.3s var(--ease); }
-.logo:hover .logo-icon { transform: rotate(-8deg) scale(1.05); }
+.nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
+.nl { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.78); padding: 6px 12px; border-radius: 8px; transition: all 0.2s; text-decoration: none; }
+.nl:hover { color: white; background: rgba(255,255,255,0.12); }
+.nl.router-link-active { color: white; background: rgba(255,255,255,0.14); }
+.scrolled .nl { color: var(--gray-500); }
+.scrolled .nl:hover { color: var(--forest-700); background: var(--forest-50); }
+.scrolled .nl.router-link-active { color: var(--forest-700); background: var(--forest-50); }
 
-.logo-text {
-  font-family: var(--font-heading);
-  font-size: 21px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.95);
-  letter-spacing: -0.3px;
-  transition: color 0.35s;
-}
-.logo-text em { font-style: italic; color: var(--forest-400); transition: color 0.35s; }
+.nav-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 
-.scrolled .logo-text { color: var(--forest-900); }
-.scrolled .logo-text em { color: var(--forest-600); }
+.icon-btn { position: relative; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9px; color: rgba(255,255,255,0.82); transition: all 0.2s; }
+.icon-btn:hover { background: rgba(255,255,255,0.12); color: white; }
+.scrolled .icon-btn { color: var(--gray-500); }
+.scrolled .icon-btn:hover { background: var(--forest-50); color: var(--forest-700); }
+.icon-badge { position: absolute; top: 1px; right: 1px; min-width: 16px; height: 16px; background: #ef4444; color: white; font-size: 10px; font-weight: 700; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
 
-/* Nav links */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-}
+.user-zone { position: relative; }
+.user-chip { display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 100px; padding: 5px 12px 5px 6px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.user-chip:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.35); }
+.user-av { width: 26px; height: 26px; border-radius: 50%; background: var(--forest-400); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.user-name { font-size: 13.5px; font-weight: 500; color: rgba(255,255,255,0.9); }
+.user-caret { color: rgba(255,255,255,0.6); transition: transform 0.25s; flex-shrink: 0; }
+.user-caret.open { transform: rotate(180deg); }
+.scrolled .user-chip { background: var(--forest-50); border-color: var(--forest-200); }
+.scrolled .user-chip:hover { background: var(--forest-100); }
+.scrolled .user-name { color: var(--forest-800); }
+.scrolled .user-caret { color: var(--forest-600); }
 
-.nav-links a {
-  font-size: 14.5px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.8);
-  padding: 7px 13px;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-.nav-links a:hover { color: white; background: rgba(255,255,255,0.1); }
+.user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: white; border: 1px solid var(--gray-100); border-radius: 14px; box-shadow: 0 12px 36px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06); min-width: 192px; padding: 6px; opacity: 0; transform: translateY(-6px) scale(0.97); pointer-events: none; transition: opacity 0.22s, transform 0.22s; z-index: 100; }
+.user-dropdown.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.dd-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 9px; font-size: 14px; font-weight: 500; color: var(--gray-700); transition: all 0.18s; cursor: pointer; text-decoration: none; background: none; border: none; width: 100%; text-align: left; font-family: inherit; }
+.dd-item:hover { background: var(--forest-50); color: var(--forest-700); }
+.dd-sep { height: 1px; background: var(--gray-100); margin: 4px 0; }
+.dd-logout { color: #dc2626; }
+.dd-logout:hover { background: #fff5f5; color: #dc2626; }
 
-.scrolled .nav-links a { color: var(--gray-500); }
-.scrolled .nav-links a:hover { color: var(--forest-700); background: var(--forest-50); }
-
-/* Actions */
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.btn-ghost {
-  font-size: 14.5px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.85);
-  padding: 8px 16px;
-  border-radius: 9px;
-  transition: all 0.2s;
-}
-.btn-ghost:hover { color: white; background: rgba(255,255,255,0.1); }
+.btn-ghost { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.82); padding: 7px 14px; border-radius: 9px; transition: all 0.2s; text-decoration: none; }
+.btn-ghost:hover { color: white; background: rgba(255,255,255,0.12); }
 .scrolled .btn-ghost { color: var(--gray-600); }
 .scrolled .btn-ghost:hover { background: var(--forest-50); color: var(--forest-700); }
 
-.logout-btn {
-  background: none;
-  border: none;
-  font-family: inherit;
-}
+.vsep { width: 1px; height: 22px; background: rgba(255,255,255,0.2); margin: 0 6px; flex-shrink: 0; }
+.scrolled .vsep { background: var(--gray-200); }
 
-.msg-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  color: rgba(255,255,255,0.85);
-  transition: all 0.2s;
-}
-
-.msg-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-.scrolled .msg-btn { color: var(--gray-600); }
-.scrolled .msg-btn:hover { background: var(--forest-50); color: var(--forest-700); }
-
-.msg-badge {
-  position: absolute;
-  top: 2px; right: 2px;
-  min-width: 17px;
-  height: 17px;
-  background: #ef4444;
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  line-height: 1;
-}
-
-.mobile-messages {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mobile-badge {
-  background: #ef4444;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 10px;
-  padding: 1px 6px;
-}
-
-.btn-cta {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--forest-900);
-  background: var(--white);
-  padding: 9px 18px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.1);
-  transition: all 0.25s var(--ease);
-}
+.btn-cta { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--forest-900); background: white; padding: 9px 18px; border-radius: 10px; text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.1); transition: all 0.25s var(--ease); }
 .btn-cta:hover { transform: translateY(-1px); box-shadow: 0 5px 20px rgba(0,0,0,0.22); }
-.scrolled .btn-cta { background: var(--forest-600); color: white; }
-.scrolled .btn-cta:hover { background: var(--forest-700); }
+.scrolled .btn-cta { background: var(--forest-600); color: white; box-shadow: none; }
+.scrolled .btn-cta:hover { background: var(--forest-700); box-shadow: 0 4px 16px rgba(27,67,50,0.25); }
 
-/* Hamburger */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  margin-left: auto;
-}
-.hamburger span {
-  display: block; width: 22px; height: 2px;
-  background: white; border-radius: 2px;
-  transition: all 0.3s var(--ease);
-  transform-origin: center;
-}
+.hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; margin-left: auto; }
+.hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; transition: all 0.3s var(--ease); transform-origin: center; }
 .scrolled .hamburger span { background: var(--forest-800); }
 .hamburger span.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
 .hamburger span.open:nth-child(2) { opacity: 0; transform: scaleX(0); }
 .hamburger span.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* Mobile drawer */
-.mobile-drawer {
-  display: none;
-  flex-direction: column;
-  background: white;
-  padding: 12px 20px 20px;
-  border-top: 1px solid var(--forest-100);
-  overflow: hidden;
-  max-height: 0;
-  transition: max-height 0.4s var(--ease), padding 0.3s;
-}
-.mobile-drawer.open { max-height: 500px; }
+.mobile-drawer { display: none; flex-direction: column; background: white; border-top: 1px solid var(--forest-100); overflow: hidden; max-height: 0; transition: max-height 0.4s var(--ease), padding 0.3s; padding: 0 16px; }
+.mobile-drawer.open { max-height: 560px; padding: 8px 16px 20px; }
 
-.mobile-drawer a {
-  padding: 11px 14px;
-  border-radius: 9px;
-  font-size: 15px;
-  color: var(--gray-600);
-  font-weight: 500;
-  transition: all 0.2s;
-}
-.mobile-drawer a:hover { background: var(--forest-50); color: var(--forest-700); }
+.ml { display: flex; align-items: center; padding: 11px 12px; border-radius: 9px; font-size: 15px; color: var(--gray-600); font-weight: 500; transition: all 0.2s; text-decoration: none; gap: 8px; }
+.ml:hover { background: var(--forest-50); color: var(--forest-700); }
+.ml-msg { justify-content: space-between; }
+.ml-badge { background: #ef4444; color: white; font-size: 11px; font-weight: 700; border-radius: 10px; padding: 1px 6px; }
+.ml-logout { background: none; border: none; text-align: left; width: 100%; font-family: inherit; cursor: pointer; color: #dc2626; padding: 11px 12px; border-radius: 9px; font-size: 15px; font-weight: 500; }
+.ml-logout:hover { background: #fff5f5; }
+.md-sep { height: 1px; background: var(--gray-100); margin: 6px 0; }
+.ml-cta { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--forest-600); color: white; font-size: 15px; font-weight: 600; padding: 13px; border-radius: 12px; margin-top: 10px; text-decoration: none; transition: background 0.2s; }
+.ml-cta:hover { background: var(--forest-700); }
 
-.mobile-divider { height: 1px; background: var(--gray-100); margin: 8px 0; }
-
-.mobile-login { font-weight: 500; }
-.mobile-login.logout-btn {
-  background: none;
-  border: none;
-  text-align: left;
-  width: 100%;
-}
-.mobile-cta {
-  background: var(--forest-600) !important;
-  color: white !important;
-  text-align: center;
-  font-weight: 600 !important;
-  margin-top: 4px;
-}
-.mobile-cta:hover { background: var(--forest-700) !important; }
-
-@media (max-width: 960px) {
+@media (max-width: 1060px) {
   .nav-links { display: none; }
   .nav-actions { display: none; }
   .hamburger { display: flex; }

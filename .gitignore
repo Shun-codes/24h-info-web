@@ -34,3 +34,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Upload
+backend/public/uploads

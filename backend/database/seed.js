@@ -20,7 +20,7 @@ function randImgs(count) {
   return pool.slice(0, count)
 }
 
-// Annonces seed — images dans uploads/seed/image1.png … image99.png
+// Annonces seed — images dans public/uploads/seed/image1.png … image99.png
 const LISTINGS_SEED = [
   // alice@seed.test
   { sellerEmail: 'alice@seed.test', cat: 'plantes-interieur', title: 'Monstera Deliciosa XXL',                        desc: 'Magnifique monstera de 1m20, très bonne santé, pot inclus.',                                  price: 45.00,  city: 'Lyon',            method: 'both',    imgs: randImgs(2) },
@@ -124,7 +124,7 @@ async function seed() {
   console.log('  alice@seed.test    / jardin123')
   console.log('  bob@seed.test      / jardin123')
   console.log('  carol@seed.test    / jardin123\n')
-  console.log('Mets tes images dans : backend/uploads/seed/  (image1.png … image99.png)')
+  console.log('Mets tes images dans : backend/public/uploads/seed/  (image1.png … image99.png)')
 
   await pool.end()
 }

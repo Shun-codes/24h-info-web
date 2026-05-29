@@ -4,6 +4,13 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import * as listingsApi from '@/api/listings.js'
 import { getCategories } from '@/api/categories.js'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const headerRef = ref(null)
+const sy  = useScrollParallax()
+const ap1 = parallaxStyle(headerRef, sy, 0.18)
+const ap2 = parallaxStyle(headerRef, sy, 0.12)
+const ap3 = parallaxStyle(headerRef, sy, 0.24)
 
 const router = useRouter()
 const route  = useRoute()
@@ -163,7 +170,13 @@ onMounted(async () => {
 <template>
   <main class="listings-page">
     <!-- Header -->
-    <div class="page-header">
+    <div class="page-header" ref="headerRef">
+      <!-- Parallax plant decorations -->
+      <div class="ph-plants" aria-hidden="true">
+        <img src="/Plant - Gradient - Outline - 03.png" class="php php-1" :style="ap1" />
+        <img src="/Plant - Flat - 09.png"               class="php php-2" :style="ap2" />
+        <img src="/Plant - Gradient - Outline - 07.png" class="php php-3" :style="ap3" />
+      </div>
       <div class="container">
         <h1 class="page-title">Toutes les annonces</h1>
         <p class="page-subtitle">Trouvez plantes, outils, services et bien plus près de chez vous</p>
@@ -334,7 +347,14 @@ onMounted(async () => {
   background: linear-gradient(135deg, var(--forest-800) 0%, var(--forest-600) 100%);
   padding: 96px 0 48px;
   color: white;
+  position: relative; overflow: hidden;
 }
+.ph-plants { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.php { position: absolute; height: auto; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.php-1 { width: min(38vw, 480px); top: -30px; right: -60px; opacity: 0.30; rotate: 10deg; }
+.php-2 { width: min(22vw, 280px); bottom: -20px; left: -40px; opacity: 0.35; rotate: -15deg; }
+.php-3 { width: min(18vw, 220px); top: 10%; right: 22%; opacity: 0.18; }
+.page-header .container { position: relative; z-index: 1; }
 
 .page-title {
   font-size: clamp(28px, 4vw, 42px);

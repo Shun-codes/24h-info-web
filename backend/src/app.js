@@ -7,6 +7,8 @@ import rateLimit from 'express-rate-limit'
 import morgan from 'morgan'
 import jwt from 'jsonwebtoken'
 import { config } from 'dotenv'
+import path, { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import routes from './routes/index.js'
 import { errorHandler, notFound } from './middleware/error.middleware.js'
 
@@ -14,6 +16,8 @@ config()
 
 const app        = express()
 const httpServer = createServer(app)
+const __dirname  = dirname(fileURLToPath(import.meta.url))
+const uploadsDir = path.resolve(__dirname, '../public/uploads')
 
 const io = new Server(httpServer, {
   cors: {
@@ -22,7 +26,6 @@ const io = new Server(httpServer, {
   },
 })
 
-// Auth middleware pour les sockets
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token
   if (!token) return next(new Error('Non authentifié'))
@@ -39,7 +42,6 @@ io.on('connection', (socket) => {
   socket.join(`user:${socket.userId}`)
 })
 
-// Rendre io accessible dans les contrôleurs via req.app.get('io')
 app.set('io', io)
 
 app.use(helmet())
@@ -61,7 +63,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 
 app.use('/api', routes)
-app.use('/uploads', express.static('uploads'))
+app.use('/uploads', express.static(uploadsDir))
 
 app.use(notFound)
 app.use(errorHandler)

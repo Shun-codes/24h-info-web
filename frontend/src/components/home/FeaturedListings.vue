@@ -1,6 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getListings } from '@/api/listings.js'
+import { useScrollParallax, parallaxStyle } from '@/composables/useScrollParallax.js'
+
+const sectionRef = ref(null)
+const sy  = useScrollParallax()
+const fp1 = parallaxStyle(sectionRef, sy, 0.16)
+const fp2 = parallaxStyle(sectionRef, sy, 0.10)
+const fp3 = parallaxStyle(sectionRef, sy, 0.20)
 
 const listings = ref([])
 
@@ -54,7 +61,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="listings-section" id="annonces" v-if="listings.length > 0">
+  <section class="listings-section" id="annonces" v-if="listings.length > 0" ref="sectionRef">
+    <!-- Parallax plant decorations -->
+    <div class="listings-plants" aria-hidden="true">
+      <img src="/Plant - Gradient - Outline - 02.png" class="lp lp-1" :style="fp1" />
+      <img src="/Plant - Flat - 07.png"               class="lp lp-2" :style="fp2" />
+      <img src="/Plant - Gradient - Outline - 06.png" class="lp lp-3" :style="fp3" />
+    </div>
     <div class="container">
       <div class="section-header">
         <span class="section-badge">À la une</span>
@@ -129,7 +142,13 @@ onMounted(async () => {
 .listings-section {
   padding: 96px 0;
   background: white;
+  position: relative; overflow: hidden;
 }
+.listings-plants { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.lp { position: absolute; height: auto; will-change: transform; user-select: none; -webkit-user-drag: none; }
+.lp-1 { width: min(30vw, 380px); top: 5%;    right: -80px; opacity: 0.10; rotate: 10deg; }
+.lp-2 { width: min(20vw, 240px); bottom: 8%; left: -50px;  opacity: 0.12; rotate: -12deg; }
+.lp-3 { width: min(16vw, 200px); top: 40%;   right: 3%;    opacity: 0.08; }
 
 .listings-grid {
   display: grid;
@@ -232,6 +251,7 @@ onMounted(async () => {
   position: absolute; inset: 0; z-index: 1;
 }
 
+.container { position: relative; z-index: 1; }
 .listings-footer { text-align: center; margin-top: 52px; }
 .btn-all {
   display: inline-flex; align-items: center; gap: 8px;
