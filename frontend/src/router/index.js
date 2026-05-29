@@ -61,6 +61,11 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/comment-ca-marche',
+      name: 'how-it-works',
+      component: () => import('@/views/comment-ca-marche.vue'),
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('@/views/not-found.vue'),

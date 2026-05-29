@@ -15,14 +15,7 @@ const links = {
           <!-- Brand -->
           <div class="footer-brand">
             <a href="/" class="footer-logo">
-              <svg width="32" height="32" viewBox="0 0 36 36" fill="none">
-                <path d="M18 3C18 3 6 10 6 21C6 27.6 11.4 33 18 33C24.6 33 30 27.6 30 21C30 10 18 3 18 3Z" fill="#52b788"/>
-                <path d="M18 3C18 3 30 10 30 21" stroke="rgba(255,255,255,0.6)" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M18 33V17" stroke="rgba(255,255,255,0.6)" stroke-width="1.8" stroke-linecap="round"/>
-                <path d="M18 20C18 20 14 17 11 18" stroke="rgba(255,255,255,0.5)" stroke-width="1.4" stroke-linecap="round"/>
-                <path d="M18 24C18 24 22 21 25 22" stroke="rgba(255,255,255,0.5)" stroke-width="1.4" stroke-linecap="round"/>
-              </svg>
-              <span class="footer-logo-text">L'Uni <em>Vert</em></span>
+              <img src="/uniVert.png" class="footer-logo-img" alt="L'Uni Vert" />
             </a>
             <p class="footer-tagline">
               La marketplace de référence pour tous les passionnés de jardinage en France.
@@ -119,13 +112,12 @@ const links = {
   margin-bottom: 16px;
 }
 
-.footer-logo-text {
-  font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 700;
-  color: white;
+.footer-logo-img {
+  height: 40px; width: auto;
+  object-fit: contain; display: block;
+  transition: opacity 0.2s;
 }
-.footer-logo-text em { font-style: italic; color: var(--forest-400); }
+.footer-logo:hover .footer-logo-img { opacity: 0.85; }
 
 .footer-tagline {
   font-size: 14px;
